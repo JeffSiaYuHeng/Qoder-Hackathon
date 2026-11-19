@@ -61,6 +61,13 @@ vercel deploy        # preview deploy
 4. **Action plan** — rule-based builder (`src/lib/plan.js`) writes `incidents`, `incident_institutions` and `action_steps`; the screen renders `tel:` / web / map buttons, a call script, email drafts and a printable police report.
 5. Step checkboxes persist `action_steps.done`.
 
+## Language (i18n)
+
+- Hand-rolled EN/BM dictionary in `src/lib/i18n.js` — no dependency.
+- `LangContext` + `useI18n()` expose `lang`, `setLang`, `t`; choice persists in `localStorage` (`scamsos.lang`).
+- The toggle is in the topbar (auth screen included). Dates use `en-MY` / `ms-MY`.
+- Plan generation is localized at build time: step titles, call script and `mailto:` drafts are generated in the active language and stored that way.
+
 ## Auth
 
 - Supabase Auth email/password; `incidents.user_id` references `auth.users`.

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
+import { useI18n } from './lib/i18n'
 
 const GROUPS = [
-  ['bank', 'Banks'],
-  ['ewallet', 'E-wallets'],
-  ['platform', 'Platforms'],
+  ['bank', 'banks'],
+  ['ewallet', 'ewallets'],
+  ['platform', 'platforms'],
 ]
 
 export default function InstitutionPicker({ onContinue }) {
+  const { t } = useI18n()
   const [institutions, setInstitutions] = useState([])
   const [selected, setSelected] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,21 +33,18 @@ export default function InstitutionPicker({ onContinue }) {
 
   return (
     <div>
-      <h1>Money gone? Act now.</h1>
-      <p className="sub">
-        Pick where the money went — you can pick more than one. We will build your
-        call list, checklist and police-ready report from here.
-      </p>
+      <h1>{t('pickTitle')}</h1>
+      <p className="sub">{t('pickSub')}</p>
 
-      {loading && <p className="status">Loading institution registry…</p>}
-      {error && <p className="status error">Could not load registry: {error}</p>}
+      {loading && <p className="status">{t('loadingRegistry')}</p>}
+      {error && <p className="status error">{t('registryError', { msg: error })}</p>}
 
-      {GROUPS.map(([type, label]) => {
+      {GROUPS.map(([type, labelKey]) => {
         const items = institutions.filter((i) => i.type === type)
         if (!items.length) return null
         return (
           <section key={type}>
-            <h2>{label}</h2>
+            <h2>{t(labelKey)}</h2>
             <div className="grid">
               {items.map((i) => (
                 <button
@@ -66,23 +65,23 @@ export default function InstitutionPicker({ onContinue }) {
       <footer>
         <div className="footer-row">
           <span>
-            <strong>Selected:</strong>{' '}
+            <strong>{t('selected')}</strong>{' '}
             {institutions
               .filter((i) => selected.includes(i.id))
               .map((i) => i.name)
-              .join(', ') || 'none yet'}
+              .join(', ') || t('noneYet')}
           </span>
           <button
             className="primary"
             disabled={!selected.length}
             onClick={() => onContinue(institutions.filter((i) => selected.includes(i.id)))}
           >
-            Continue
+            {t('continue')}
           </button>
         </div>
         {!loading && !error && (
           <p className="status">
-            Registry loaded from Supabase · {institutions.length} institutions
+            {t('registryLoaded', { count: institutions.length })}
           </p>
         )}
       </footer>

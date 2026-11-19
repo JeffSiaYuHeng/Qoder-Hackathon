@@ -5,30 +5,31 @@ function toTel(phone) {
 }
 
 function formatAmount(amount) {
-  if (!amount) return 'an unknown amount'
+  if (!amount) return amount === 0 ? 'RM 0' : 'RM —'
   return `RM ${Number(amount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}`
 }
 
-function formatWhen(occurredAt) {
-  if (!occurredAt) return 'recently'
-  return new Date(occurredAt).toLocaleString('en-MY', {
+function formatWhen(occurredAt, locale) {
+  if (!occurredAt) return new Date(occurredAt || Date.now()).toLocaleString(locale)
+  return new Date(occurredAt).toLocaleString(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   })
 }
 
 // HACK: rule-based stand-in for the LLM intake call (no LLM key yet).
-// Same shape as scam-response-app.md §5 so it can be swapped later.
-export function buildActionPlan(form, institutions) {
+// Same shape as the plan doc §5 so it can be swapped later.
+export function buildActionPlan(form, institutions, t, locale) {
   const amount = formatAmount(form.amount)
-  const when = formatWhen(form.occurred_at)
+  const when = form.occurred_at ? formatWhen(form.occurred_at, locale) : null
+  const whenText = when || '—'
   const names = institutions.map((i) => i.name).join(', ')
   const steps = []
 
   for (const inst of institutions) {
     if (inst.hotline) {
       steps.push({
-        title: `Call ${inst.name} fraud line (${inst.hotline})`,
+        title: t('step.callBank', { name: inst.name, hotline: inst.hotline }),
         action: 'call',
         value: toTel(inst.hotline),
         urgency: 'now',
@@ -37,7 +38,7 @@ export function buildActionPlan(form, institutions) {
   }
 
   steps.push({
-    title: 'Call NSRC 997 (National Scam Response Centre)',
+    title: t('step.callNsrc'),
     action: 'call',
     value: 'tel:997',
     urgency: 'now',
@@ -46,7 +47,7 @@ export function buildActionPlan(form, institutions) {
   for (const inst of institutions) {
     if (inst.report_url) {
       steps.push({
-        title: `Open ${inst.name} fraud report page`,
+        title: t('step.openPage', { name: inst.name }),
         action: 'open',
         value: inst.report_url,
         urgency: 'now',
@@ -55,31 +56,31 @@ export function buildActionPlan(form, institutions) {
   }
 
   steps.push({
-    title: 'Find your nearest police station',
+    title: t('step.findPolice'),
     action: 'map',
     value: 'https://www.google.com/maps/search/?api=1&query=police+station+near+me',
     urgency: 'soon',
   })
 
-  const subject = `Fraud report — ${amount} on ${when}`
+  const subject = t('mail.subject', { amount, when: whenText })
   const bodyLines = [
-    `I am writing to report a fraudulent transaction.`,
-    ``,
-    `Amount: ${amount}`,
-    `Date/time: ${when}`,
-    `What happened: ${form.victim_summary}`,
-    form.scammer_phone && `Scammer phone: ${form.scammer_phone}`,
-    form.scammer_account && `Scammer account: ${form.scammer_account}`,
-    form.transaction_ref && `Transaction reference: ${form.transaction_ref}`,
-    ``,
-    `Please freeze the receiving account and attempt to recall the transaction.`,
-    `I am also lodging an NSRC 997 report and a police report.`,
+    t('mail.intro'),
+    '',
+    t('script.amount', { amount }),
+    t('script.when', { when: whenText }),
+    t('script.whatHappened', { summary: form.victim_summary }),
+    form.scammer_phone && t('script.phone', { phone: form.scammer_phone }),
+    form.scammer_account && t('script.account', { account: form.scammer_account }),
+    form.transaction_ref && t('script.ref', { ref: form.transaction_ref }),
+    '',
+    t('mail.freeze'),
+    t('mail.nsrc'),
   ].filter(Boolean)
 
   for (const inst of institutions) {
     if (inst.support_email) {
       steps.push({
-        title: `Email ${inst.name} (${inst.support_email})`,
+        title: t('step.email', { name: inst.name, email: inst.support_email }),
         action: 'email',
         value: `mailto:${inst.support_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`,
         urgency: 'soon',
@@ -88,18 +89,18 @@ export function buildActionPlan(form, institutions) {
   }
 
   const call_script = [
-    `Hi, I'm calling to report a fraudulent transaction.`,
-    ``,
-    `Amount: ${amount}`,
-    `Date/time: ${when}`,
-    `Institutions involved: ${names}`,
-    `What happened: ${form.victim_summary}`,
-    form.scammer_phone ? `Scammer phone: ${form.scammer_phone}` : null,
-    form.scammer_account ? `Scammer account: ${form.scammer_account}` : null,
-    form.transaction_ref ? `Transaction reference: ${form.transaction_ref}` : null,
-    ``,
-    `Please freeze my account and attempt to recall the transaction.`,
-    `I am reporting this to NSRC 997 and will lodge a police report immediately.`,
+    t('script.intro'),
+    '',
+    t('script.amount', { amount }),
+    t('script.when', { when: whenText }),
+    t('script.institutions', { names }),
+    t('script.whatHappened', { summary: form.victim_summary }),
+    form.scammer_phone ? t('script.phone', { phone: form.scammer_phone }) : null,
+    form.scammer_account ? t('script.account', { account: form.scammer_account }) : null,
+    form.transaction_ref ? t('script.ref', { ref: form.transaction_ref }) : null,
+    '',
+    t('script.freeze'),
+    t('script.nsrc'),
   ]
     .filter((line) => line !== null)
     .join('\n')
@@ -109,7 +110,7 @@ export function buildActionPlan(form, institutions) {
     call_script,
     summary: {
       amount: form.amount ? Number(form.amount) : null,
-      when,
+      when: whenText,
       institutions: institutions.map((i) => i.name),
       step_count: steps.length,
     },

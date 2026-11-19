@@ -1,39 +1,36 @@
-const VERB = {
-  call: 'Call',
-  open: 'Open page',
-  map: 'Open map',
-  email: 'Draft email',
-  print: 'Print',
-}
+import { useI18n, localeFor } from './lib/i18n'
 
-const MISSING_HINTS = [
-  ['amount', 'Add the amount if you know it'],
-  ['scammer_phone', "Add the scammer's phone number"],
-  ['scammer_account', "Add the account number the money went to"],
-  ['transaction_ref', 'Add the transaction reference'],
+const HINT_KEYS = [
+  ['amount', 'hint.amount'],
+  ['scammer_phone', 'hint.phone'],
+  ['scammer_account', 'hint.account'],
+  ['transaction_ref', 'hint.ref'],
 ]
 
 export default function ActionPlan({ incident, institutions, onToggle, onReset }) {
+  const { lang, t } = useI18n()
+  const locale = localeFor(lang)
   const steps = incident.steps
-  const missing = MISSING_HINTS.filter(([field]) => !incident[field]).map(([, hint]) => hint)
+  const missing = HINT_KEYS.filter(([field]) => !incident[field]).map(([, key]) => t(key))
   const emailSteps = steps.filter((s) => s.action === 'email')
+  const amountText = incident.amount
+    ? `RM ${Number(incident.amount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}`
+    : t('amountUnknown')
+  const whenText = incident.occurred_at
+    ? new Date(incident.occurred_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
+    : t('timeUnknown')
 
   return (
     <div>
-      <h1 className="no-print">Your action plan</h1>
-      <p className="sub no-print">
-        Do these in order. Every minute counts — the first hour is when money is
-        still recoverable.
-      </p>
+      <h1 className="no-print">{t('planTitle')}</h1>
+      <p className="sub no-print">{t('planSub')}</p>
 
       <section className="panel no-print">
-        <h2>Incident detected</h2>
+        <h2>{t('incidentDetected')}</h2>
         <p className="incident-line">
-          {incident.amount ? `RM ${Number(incident.amount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}` : 'Amount unknown'}
+          {amountText}
           {' · '}
-          {incident.occurred_at
-            ? new Date(incident.occurred_at).toLocaleString('en-MY', { dateStyle: 'medium', timeStyle: 'short' })
-            : 'Time not given'}
+          {whenText}
           {' · '}
           {institutions.map((i) => i.name).join(', ')}
         </p>
@@ -55,16 +52,16 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
             </label>
             <div className="step-body">
               <span className="step-title">{s.title}</span>
-              <span className="step-urgency">{s.urgency === 'now' ? 'Do now' : 'Next'}</span>
+              <span className="step-urgency">{s.urgency === 'now' ? t('doNow') : t('next')}</span>
             </div>
             {s.value &&
               (s.action === 'call' ? (
                 <a className="action-btn" href={s.value}>
-                  {VERB[s.action]}
+                  {t('verb.call')}
                 </a>
               ) : (
                 <a className="action-btn" href={s.value} target="_blank" rel="noreferrer">
-                  {VERB[s.action]}
+                  {t(`verb.${s.action}`)}
                 </a>
               ))}
           </li>
@@ -72,14 +69,14 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
       </ol>
 
       <details className="panel no-print">
-        <summary>Call script — what to say</summary>
+        <summary>{t('callScriptSummary')}</summary>
         <pre className="script">{incident.call_script}</pre>
       </details>
 
       {emailSteps.length > 0 && (
         <section className="panel no-print">
-          <h2>Report to the platform</h2>
-          <p className="sub">Opens your own email app with the report pre-filled.</p>
+          <h2>{t('reportToPlatform')}</h2>
+          <p className="sub">{t('reportToPlatformSub')}</p>
           <div className="row">
             {emailSteps.map((s) => (
               <a key={s.id} className="action-btn" href={s.value}>
@@ -92,56 +89,57 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
 
       <div className="footer-row no-print">
         <button className="primary" onClick={() => window.print()}>
-          Print police-ready report
+          {t('printReport')}
         </button>
         <button className="link" onClick={onReset}>
-          Start a new incident
+          {t('newIncident')}
         </button>
       </div>
 
       <section className="report">
-        <h2>INCIDENT REPORT (POLICE)</h2>
+        <h2>{t('report.title')}</h2>
         <p className="report-meta">
-          Prepared {new Date(incident.created_at).toLocaleString('en-MY')} · Reference{' '}
-          {incident.id.slice(0, 8).toUpperCase()}
+          {t('report.prepared', {
+            when: new Date(incident.created_at).toLocaleString(locale),
+            ref: incident.id.slice(0, 8).toUpperCase(),
+          })}
         </p>
         <table>
           <tbody>
             <tr>
-              <th>Amount lost</th>
-              <td>{incident.amount ? `RM ${Number(incident.amount).toFixed(2)}` : 'Not known'}</td>
+              <th>{t('report.amountLost')}</th>
+              <td>{incident.amount ? `RM ${Number(incident.amount).toFixed(2)}` : t('report.notKnown')}</td>
             </tr>
             <tr>
-              <th>Date/time of incident</th>
-              <td>{incident.occurred_at ? new Date(incident.occurred_at).toLocaleString('en-MY') : 'Not known'}</td>
+              <th>{t('report.when')}</th>
+              <td>{incident.occurred_at ? new Date(incident.occurred_at).toLocaleString(locale) : t('report.notKnown')}</td>
             </tr>
             <tr>
-              <th>How victim was contacted</th>
-              <td>{incident.contact_method || 'Not known'}</td>
+              <th>{t('report.method')}</th>
+              <td>{incident.contact_method ? t(`method.${incident.contact_method}`) : t('report.notKnown')}</td>
             </tr>
             <tr>
-              <th>Institutions involved</th>
-              <td>{institutions.map((i) => i.name).join(', ') || 'Not known'}</td>
+              <th>{t('report.institutions')}</th>
+              <td>{institutions.map((i) => i.name).join(', ') || t('report.notKnown')}</td>
             </tr>
             <tr>
-              <th>Suspect contact number</th>
-              <td>{incident.scammer_phone || 'Not known'}</td>
+              <th>{t('report.suspectPhone')}</th>
+              <td>{incident.scammer_phone || t('report.notKnown')}</td>
             </tr>
             <tr>
-              <th>Suspect account number</th>
-              <td>{incident.scammer_account || 'Not known'}</td>
+              <th>{t('report.suspectAccount')}</th>
+              <td>{incident.scammer_account || t('report.notKnown')}</td>
             </tr>
             <tr>
-              <th>Transaction reference</th>
-              <td>{incident.transaction_ref || 'Not known'}</td>
+              <th>{t('report.txnRef')}</th>
+              <td>{incident.transaction_ref || t('report.notKnown')}</td>
             </tr>
           </tbody>
         </table>
-        <h3>Statement</h3>
+        <h3>{t('report.statement')}</h3>
         <p className="report-statement">{incident.victim_summary}</p>
         <p className="report-note">
-          Steps already taken: {steps.filter((s) => s.done).length} of {steps.length}.
-          Attach screenshots of the conversation and transaction receipts.
+          {t('report.note', { done: steps.filter((s) => s.done).length, total: steps.length })}
         </p>
       </section>
     </div>

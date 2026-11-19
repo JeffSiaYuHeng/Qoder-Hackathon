@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { supabase } from './lib/supabase'
+import { useI18n } from './lib/i18n'
 
 // HACK: demo account hardcoded for the on-stage flow
 const DEMO = { email: 'demo@scamsos.my', password: 'ScamSOS2026!' }
 
 export default function AuthScreen() {
+  const { lang, setLang, t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -22,16 +24,18 @@ export default function AuthScreen() {
   return (
     <main>
       <div className="auth">
-        <span className="logo">ScamSOS</span>
-        <h1>Sign in to start</h1>
-        <p className="sub">
-          Scammed just now? Sign in, tell us what happened, and get your next steps in
-          under a minute.
-        </p>
+        <div className="footer-row">
+          <span className="logo">ScamSOS</span>
+          <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
+            {lang === 'en' ? 'BM' : 'EN'}
+          </button>
+        </div>
+        <h1>{t('signInTitle')}</h1>
+        <p className="sub">{t('signInSub')}</p>
 
         <form onSubmit={(e) => signIn(null, e)}>
           <label>
-            Email
+            {t('email')}
             <input
               type="email"
               value={email}
@@ -41,7 +45,7 @@ export default function AuthScreen() {
             />
           </label>
           <label>
-            Password
+            {t('password')}
             <input
               type="password"
               value={password}
@@ -51,12 +55,12 @@ export default function AuthScreen() {
             />
           </label>
           <button className="primary" disabled={busy}>
-            {busy ? 'Signing in…' : 'Sign in'}
+            {busy ? t('signingIn') : t('signIn')}
           </button>
         </form>
 
         <button className="link" onClick={() => signIn(DEMO)} disabled={busy}>
-          Use demo account
+          {t('useDemo')}
         </button>
         {error && <p className="status error">{error}</p>}
       </div>

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from './lib/supabase'
+import { LangContext, makeT, localeFor } from './lib/i18n'
 import AuthScreen from './AuthScreen'
 import InstitutionPicker from './InstitutionPicker'
 import IntakeForm from './IntakeForm'
@@ -14,6 +15,13 @@ export default function App() {
   const [incident, setIncident] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const [lang, setLang] = useState(() => localStorage.getItem('scamsos.lang') || 'en')
+
+  const t = useMemo(() => makeT(lang), [lang])
+
+  useEffect(() => {
+    localStorage.setItem('scamsos.lang', lang)
+  }, [lang])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -27,7 +35,7 @@ export default function App() {
   async function submitIntake(form) {
     setSaving(true)
     setError(null)
-    const plan = buildActionPlan(form, selected)
+    const plan = buildActionPlan(form, selected, t, localeFor(lang))
 
     const { data: created, error: insertError } = await supabase
       .from('incidents')
@@ -102,48 +110,56 @@ export default function App() {
     setError(null)
   }
 
-  if (!authReady) return <main><p className="status">Loading…</p></main>
-  if (!session) return <AuthScreen />
-
   return (
-    <main>
-      <header className="topbar">
-        <span className="logo">ScamSOS</span>
-        <span className="topbar-right">
-          <span className="badge">{session.user.email}</span>
-          <button className="link" onClick={() => supabase.auth.signOut()}>
-            Sign out
-          </button>
-        </span>
-      </header>
+    <LangContext.Provider value={{ lang, setLang, t }}>
+      {!authReady && <main><p className="status">Loading…</p></main>}
 
-      {stage === 'pick' && (
-        <InstitutionPicker
-          onContinue={(items) => {
-            setSelected(items)
-            setStage('intake')
-          }}
-        />
-      )}
+      {authReady && !session && <AuthScreen />}
 
-      {stage === 'intake' && (
-        <IntakeForm
-          institutions={selected}
-          saving={saving}
-          error={error}
-          onBack={() => setStage('pick')}
-          onSubmit={submitIntake}
-        />
-      )}
+      {authReady && session && (
+        <main>
+          <header className="topbar">
+            <span className="logo">ScamSOS</span>
+            <span className="topbar-right">
+              <span className="badge">{session.user.email}</span>
+              <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
+                {lang === 'en' ? 'BM' : 'EN'}
+              </button>
+              <button className="link" onClick={() => supabase.auth.signOut()}>
+                {t('signOut')}
+              </button>
+            </span>
+          </header>
 
-      {stage === 'plan' && incident && (
-        <ActionPlan
-          incident={incident}
-          institutions={selected}
-          onToggle={toggleStep}
-          onReset={reset}
-        />
+          {stage === 'pick' && (
+            <InstitutionPicker
+              onContinue={(items) => {
+                setSelected(items)
+                setStage('intake')
+              }}
+            />
+          )}
+
+          {stage === 'intake' && (
+            <IntakeForm
+              institutions={selected}
+              saving={saving}
+              error={error}
+              onBack={() => setStage('pick')}
+              onSubmit={submitIntake}
+            />
+          )}
+
+          {stage === 'plan' && incident && (
+            <ActionPlan
+              incident={incident}
+              institutions={selected}
+              onToggle={toggleStep}
+              onReset={reset}
+            />
+          )}
+        </main>
       )}
-    </main>
+    </LangContext.Provider>
   )
 }

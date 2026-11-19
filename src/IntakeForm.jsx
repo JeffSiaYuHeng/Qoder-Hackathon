@@ -1,15 +1,10 @@
 import { useState } from 'react'
+import { useI18n } from './lib/i18n'
 
-const METHODS = [
-  ['call', 'Phone call'],
-  ['whatsapp', 'WhatsApp'],
-  ['sms', 'SMS'],
-  ['social', 'Social media'],
-  ['marketplace', 'Marketplace / shopping'],
-  ['other', 'Other'],
-]
+const METHODS = ['call', 'whatsapp', 'sms', 'social', 'marketplace', 'other']
 
 export default function IntakeForm({ institutions, saving, error, onBack, onSubmit }) {
+  const { t } = useI18n()
   const [form, setForm] = useState({
     victim_summary: '',
     amount: '',
@@ -31,20 +26,19 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
 
   return (
     <div>
-      <h1>What happened?</h1>
+      <h1>{t('intakeTitle')}</h1>
       <p className="sub">
-        Involved: <strong>{institutions.map((i) => i.name).join(', ')}</strong>. Type
-        it like you would tell a friend — we will turn it into steps and reports.
+        {t('intakeSub', { names: institutions.map((i) => i.name).join(', ') })}
       </p>
 
       <form onSubmit={submit} className="intake">
         <label>
-          Tell us what happened
+          {t('summaryLabel')}
           <textarea
             rows={5}
             value={form.victim_summary}
             onChange={set('victim_summary')}
-            placeholder="e.g. A caller pretending to be from a parcel courier said I owed a delivery fee, and I transferred RM 4,800…"
+            placeholder={t('summaryPlaceholder')}
             required
             autoFocus
           />
@@ -52,50 +46,50 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
 
         <div className="row">
           <label>
-            Amount (RM)
+            {t('amountLabel')}
             <input type="number" min="0" step="0.01" value={form.amount} onChange={set('amount')} />
           </label>
           <label>
-            When
+            {t('whenLabel')}
             <input type="datetime-local" value={form.occurred_at} onChange={set('occurred_at')} />
           </label>
         </div>
 
         <div className="row">
           <label>
-            How they contacted you
+            {t('methodLabel')}
             <select value={form.contact_method} onChange={set('contact_method')}>
-              <option value="">Select…</option>
-              {METHODS.map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
+              <option value="">{t('methodSelect')}</option>
+              {METHODS.map((m) => (
+                <option key={m} value={m}>
+                  {t(`method.${m}`)}
                 </option>
               ))}
             </select>
           </label>
           <label>
-            Scammer's phone number
+            {t('phoneLabel')}
             <input type="tel" value={form.scammer_phone} onChange={set('scammer_phone')} />
           </label>
         </div>
 
         <div className="row">
           <label>
-            Scammer's account number
+            {t('accountLabel')}
             <input value={form.scammer_account} onChange={set('scammer_account')} />
           </label>
           <label>
-            Transaction reference
+            {t('refLabel')}
             <input value={form.transaction_ref} onChange={set('transaction_ref')} />
           </label>
         </div>
 
         <div className="footer-row">
           <button type="button" className="link" onClick={onBack}>
-            ← Back
+            {t('back')}
           </button>
           <button className="primary" disabled={saving}>
-            {saving ? 'Building your plan…' : 'Get my action plan'}
+            {saving ? t('buildingPlan') : t('getPlan')}
           </button>
         </div>
         {error && <p className="status error">{error}</p>}

@@ -45,6 +45,7 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
     ├── index.css
     └── lib/
         ├── supabase.js       # single Supabase client
+        ├── i18n.js           # EN/BM dictionary, context hook, localStorage persistence
         └── plan.js           # rule-based plan builder (LLM stand-in)
 ```
 
