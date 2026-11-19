@@ -85,7 +85,7 @@ All class names come from the existing JSX, so restyling never needs a component
 | Class | What it is | Behaviour |
 |---|---|---|
 | `.logo` | Wordmark | Navy text with an accent dot |
-| `.theme-toggle` | ☾ / ☀ button | 44 px circle. See §7 |
+| `.theme-toggle` | ☾ / ☀ button | 44 px circle. See §8 |
 | `.card` / `.card.selected` | Institution tile | Selected = accent border, soft fill and a ✓ badge |
 | `.primary` | Main button of a screen | Solid accent, 52 px. Disabled = grey, not faded accent |
 | `.link` | Secondary action | Underlined text, still 44 px tall |
@@ -97,8 +97,24 @@ All class names come from the existing JSX, so restyling never needs a component
 | `.report` | Police report preview | Looks like a sheet of paper on screen; the only thing that prints |
 | `.status.error` | Error line | Danger colour with a "!" prefix |
 | `.badge` | Signed-in email | Hidden on phones (≤ 560 px) to keep the header on one line |
+| `.topbar` | App bar | Sticky, translucent with blur, like a native app header |
+| `.step + .step::before` | Timeline connector | Thin line between checklist rows; turns green after a done step (parcel-tracking style) |
 
-## 7. Light and dark theme
+## 7. Responsive layout
+
+One codebase adapts to the device; the CSS is mobile-first in spirit, with three bands:
+
+| Width | Layout |
+|---|---|
+| Phone (≤ 560 px) | App-style. Sticky app bar on top; the screen's main button sits in a **sticky bottom action bar** under the thumb (picker "Continue", intake "Get my action plan"). Single column, full-width step buttons |
+| Tablet (561–1023 px) | Wider single column, more institution tiles per row, sign-in form shown as a card |
+| Desktop (≥ 1024 px) | Content up to 1080 px. **Action plan in two columns**: checklist on the left; incident summary, call script, email and print on the right. Intake form capped at a readable 720 px |
+
+- Screens ease in (220 ms) when the flow moves on; off with reduced motion.
+- `scroll-padding` keeps a focused field clear of the sticky bars.
+- Checked at 393×852, 768×1024 and 1280×800 in both themes: no horizontal scroll, the last tile is never covered by the bottom bar, print still shows only the report.
+
+## 8. Light and dark theme
 
 - **Default:** follows the device setting (`prefers-color-scheme`).
 - **Toggle:** `ThemeToggle` sits in the top bar and on the sign-in screen. It sets `data-theme="light|dark"` on `<html>` and remembers the choice in `localStorage` on that device.
@@ -106,14 +122,14 @@ All class names come from the existing JSX, so restyling never needs a component
 - **CSS:** dark values are declared twice: under `@media (prefers-color-scheme: dark)` for `:root:not([data-theme='light'])`, and under `:root[data-theme='dark']`. Edit both blocks together.
 - **Print:** always light.
 
-## 8. Copy rules
+## 9. Copy rules
 
 - Plain words, short sentences. Say what to do, not how the system works.
 - Never show raw technical errors to the victim. Say what happened and what to do next.
 - Only state facts we can source. The official guidance is to **call NSRC 997 within 24 hours** of discovering the scam ([malaysia.gov.my](https://www.malaysia.gov.my/en/topics/nsrc-997-hotline)). The Home Minister has said the first one to two hours are crucial. There is no official "first hour" or "60-minute golden hour" figure, so we don't claim one.
 - Bank Negara's advice is to call "their banks or 997" immediately, so either order is correct. Both lines run 24 hours.
 
-## 9. How it was checked
+## 10. How it was checked
 
 - Contrast computed for every token pair in both themes (all ≥ 4.5:1).
 - Golden path (sign in → pick → intake → plan) clicked through in Chrome at 390 px (phone) and 1280 px (laptop), in light and dark. No console errors.
@@ -123,7 +139,7 @@ All class names come from the existing JSX, so restyling never needs a component
 
 Supabase was mocked at the network layer for these runs, so they cover the UI, not the data.
 
-## 10. Demo on stage (phone simulated in a browser)
+## 11. Demo on stage (phone simulated in a browser)
 
 - Chrome DevTools → device toolbar → **iPhone 14 Pro** (393 px). The layout was tested at 390 px, so this matches.
 - Undock DevTools into its own window so only the phone frame is projected.
@@ -131,17 +147,17 @@ Supabase was mocked at the network layer for these runs, so they cover the UI, n
 - **Careful with Call and Email on a laptop.** A `tel:` link asks to open an outside app (likely FaceTime on a Mac) and a `mailto:` link opens Mail.app. Until the `?demo=1` mode from [04_PRD.md](04_PRD.md) §9 exists, tick the step's checkbox instead of tapping those buttons.
 - "Print police-ready report" is safe and looks good: it opens Chrome's print preview.
 
-## 11. UX backlog (needs component changes, not CSS)
+## 12. UX backlog (needs component changes, not CSS)
 
 | # | Issue | Why it matters | Suggested fix |
 |---|---|---|---|
 | 1 | The sign-in screen sits in front of a panic flow | Breaks PRD F1 ("call 997 with a single tap, without entering any data"); costs the victim time | Show the 997 and bank call actions before sign-in, or drop sign-in for the victim flow |
-| 2 | Plan screen says "the first hour is when money is still recoverable" | Not supported by an official source (see §8) | "Call now. Reporting within 24 hours gives the best chance to freeze the money." |
+| 2 | Plan screen says "the first hour is when money is still recoverable" | Not supported by an official source (see §9) | "Call now. Reporting within 24 hours gives the best chance to freeze the money." |
 | 3 | `tel:` / `mailto:` leave the browser in the stage demo | System dialogs on stage | `?demo=1`: show "Calling 997…" / "Email draft ready" in the app instead |
 | 4 | Raw Supabase error messages are shown to users | Jargon at the worst moment | Map errors to plain sentences; keep the raw message in the console |
 | 5 | Report shows `whatsapp` (raw value) and `RM 4800.00` | Looks unfinished on the printed report | Use the same labels as the intake form and `en-MY` number formatting |
 
-## 12. Sources
+## 13. Sources
 
 - Team design rules: the saved UI/UX notes report ("uiux-tips") — 60/30/10 colour, Major Third type scale, 8-point spacing, 44–48 px targets, nested radius, tinted shadows, tabular figures, status not by colour alone, 150–250 ms ease-out motion, reduced motion.
 - Contrast thresholds: WCAG 2.x AA (4.5:1 for body text).

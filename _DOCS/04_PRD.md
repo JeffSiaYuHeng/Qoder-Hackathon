@@ -65,7 +65,7 @@ Home ──► What happened (voice / text) ──► AI analysis + pick institu
 
 Screens map 1:1 to [mockup.html](mockup.html). A 60-minute "golden hour" countdown runs from the moment the user starts.
 
-> **Copy note:** official guidance is to call NSRC 997 **within 24 hours**, and the government's own "golden hour" means the first 24 hours, not 60 minutes. A countdown is fine as urgency, but don't label it as an official recovery window. See [06_DESIGN.md](06_DESIGN.md) §8.
+> **Copy note:** official guidance is to call NSRC 997 **within 24 hours**, and the government's own "golden hour" means the first 24 hours, not 60 minutes. A countdown is fine as urgency, but don't label it as an official recovery window. See [06_DESIGN.md](06_DESIGN.md) §9.
 
 ---
 
@@ -299,8 +299,8 @@ If behind at 1:20: cut live lookup to registry-only with a fake log (F5 fallback
 | Speech-to-text mishears Malaysian English | The text box is editable; canned transcript fallback |
 | The LLM invents a phone number or URL | Numbers only come from the registry; domain allow-list; prompt forbids guessing |
 | Emails go to spam / sender domain not verified | Set up the email service's verified sender domain early; demo inbox is ours |
-| Call / Email buttons open FaceTime / Mail.app on the demo laptop (phone simulated in the browser) | `?demo=1` shows in-app "Calling…" / "Draft ready" instead; until it exists, tick the step instead of tapping ([06_DESIGN.md](06_DESIGN.md) §10) |
-| An unsupported "first hour" claim on screen or in the pitch | Use the official 24-hour guidance and the minister's "first one to two hours are crucial" ([06_DESIGN.md](06_DESIGN.md) §8) |
+| Call / Email buttons open FaceTime / Mail.app on the demo laptop (phone simulated in the browser) | `?demo=1` shows in-app "Calling…" / "Draft ready" instead; until it exists, tick the step instead of tapping ([06_DESIGN.md](06_DESIGN.md) §11) |
+| An unsupported "first hour" claim on screen or in the pitch | Use the official 24-hour guidance and the minister's "first one to two hours are crucial" ([06_DESIGN.md](06_DESIGN.md) §9) |
 | Judges ask "do you actually email banks?" | "Not in the demo. In production it needs each bank's agreement on which address and format to use, and that's our B2B model." |
 
 ## 14. Open questions

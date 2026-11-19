@@ -86,7 +86,7 @@ AuthScreen ──sign in──► InstitutionPicker ──stage "pick"
 | Institution contacts (hotline, fraud page, email) | `db/seed.sql`, then re-run it in Supabase |
 | Table columns / constraints | `db/schema.sql`, then re-run it in Supabase |
 | Step order or email/call script wording | `src/lib/plan.js` |
-| Screens and copy | `src/*.jsx` (copy rules: [06_DESIGN.md](06_DESIGN.md) §8) |
+| Screens and copy | `src/*.jsx` (copy rules: [06_DESIGN.md](06_DESIGN.md) §9) |
 | Colours, fonts, spacing, light/dark values | Tokens at the top of `src/index.css` ([06_DESIGN.md](06_DESIGN.md) §3–5) |
 | How a component looks | Component section of `src/index.css` ([06_DESIGN.md](06_DESIGN.md) §6) |
 | Printed police report layout | `src/ActionPlan.jsx` + print CSS in `src/index.css` |

@@ -131,6 +131,11 @@ body {
   background: var(--bg);
 }
 
+/* Keep focused fields and anchors clear of the sticky header and bottom bar. */
+html {
+  scroll-padding: 72px 0 96px;
+}
+
 main {
   max-width: 720px;
   margin: 0 auto;
@@ -144,12 +149,33 @@ main {
 
 /* Header */
 
+/* App bar: sticks to the top like a native app header. */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
-  margin-bottom: var(--s-6);
+  margin: calc(-1 * var(--s-5)) calc(-1 * var(--s-4)) var(--s-5);
+  padding: var(--s-2) var(--s-4);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Each screen eases in when the flow moves on. */
+main > :not(.topbar) {
+  animation: screen-in 220ms var(--ease) backwards;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 .topbar-right {
@@ -522,6 +548,7 @@ textarea {
 }
 
 .step {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--s-3);
@@ -530,6 +557,21 @@ textarea {
   border-radius: var(--r-lg);
   padding: var(--s-3) var(--s-4) var(--s-3) var(--s-2);
   transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+/* Tracking-style connector between checklist rows (like a parcel timeline). */
+.step + .step::before {
+  content: '';
+  position: absolute;
+  left: 27px;
+  top: calc(-1 * var(--s-3) - 2px);
+  width: 2px;
+  height: var(--s-3);
+  background: var(--line);
+}
+
+.step.done + .step::before {
+  background: var(--ok);
 }
 
 /* The next undone step is the one to do now: highlight it, nothing else. */
@@ -632,6 +674,12 @@ textarea {
 
 .action-btn:hover {
   background: var(--surface-2);
+}
+
+.action-btn:active,
+.link:active,
+.theme-toggle:active {
+  transform: scale(0.97);
 }
 
 /* Calling is the most urgent action: solid accent + phone glyph. */
@@ -786,6 +834,99 @@ details.panel[open] summary::before {
 
   .footer-row .primary {
     flex: 1 0 auto;
+  }
+
+  /* App-style bottom action bar: the next button stays under the thumb. */
+  footer,
+  .intake .footer-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: var(--s-5) calc(-1 * var(--s-4)) 0;
+    padding: var(--s-3) var(--s-4) calc(var(--s-3) + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+  }
+
+  footer .footer-row {
+    margin-top: 0;
+  }
+
+  footer .status {
+    display: none; /* registry debug line; not for victims */
+  }
+
+  /* Let the bottom bar sit flush with the screen edge. */
+  main:has(> div > footer, .intake) {
+    padding-bottom: 0;
+  }
+}
+
+/* Tablet and up: the sign-in form becomes a card. */
+@media (min-width: 640px) {
+  .auth {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: var(--s-6);
+    box-shadow: var(--shadow);
+  }
+}
+
+/* Desktop: use the width instead of a stretched phone screen. */
+@media (min-width: 1024px) {
+  main {
+    max-width: 1080px;
+    padding-left: var(--s-6);
+    padding-right: var(--s-6);
+  }
+
+  .topbar {
+    margin-left: calc(-1 * var(--s-6));
+    margin-right: calc(-1 * var(--s-6));
+    padding-left: var(--s-6);
+    padding-right: var(--s-6);
+    border-bottom-color: transparent; /* a line that stops short of the window edge looks broken */
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+
+  .intake {
+    max-width: 720px;
+  }
+
+  /* Action plan in two columns: checklist on the left; incident, script,
+     email and print on the right. Floats keep each column's own height. */
+  main > div:has(> .steps) > .panel,
+  main > div:has(> .steps) > .footer-row {
+    float: right;
+    clear: right;
+    width: 36%;
+  }
+
+  main > div:has(> .steps) > .steps {
+    float: left;
+    width: calc(64% - var(--s-6));
+    margin-top: var(--s-4);
+  }
+
+  main > div:has(> .steps) > .footer-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  main > div:has(> .steps) > .report {
+    clear: both;
+  }
+
+  main > div:has(> .steps)::after {
+    content: '';
+    display: block;
+    clear: both;
   }
 }
 

@@ -196,4 +196,4 @@ Two outputs from the same data:
 - [ ] Which LLM / agent framework? Do we need a web-search or browser tool for the live lookup?
 - [ ] Should the email include the PDF as an attachment? (`mailto:` can't attach files, so we'd need a "download then attach" step or a send backend.)
 - [ ] Bahasa Malaysia support?
-- [x] Real recovery-time statistic for the closing line. **Answer:** there is no official measured figure. Use the official guidance: "call NSRC 997 within 24 hours" (malaysia.gov.my), and the Home Minister's "the first one to two hours are crucial" (Malay Mail, 3 Mar 2026). See [06_DESIGN.md](06_DESIGN.md) §8.
+- [x] Real recovery-time statistic for the closing line. **Answer:** there is no official measured figure. Use the official guidance: "call NSRC 997 within 24 hours" (malaysia.gov.my), and the Home Minister's "the first one to two hours are crucial" (Malay Mail, 3 Mar 2026). See [06_DESIGN.md](06_DESIGN.md) §9.
