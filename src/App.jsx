@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from './lib/supabase'
 import { LangContext, makeT, localeFor } from './lib/i18n'
-import AuthScreen from './AuthScreen'
 import InstitutionPicker from './InstitutionPicker'
 import IntakeForm from './IntakeForm'
 import ActionPlan from './ActionPlan'
@@ -13,8 +11,6 @@ import { analyzeStory } from './lib/agent'
 
 // Privacy (PRD §9): incident data lives in React state only — nothing is written to Supabase.
 export default function App() {
-  const [session, setSession] = useState(null)
-  const [authReady, setAuthReady] = useState(false)
   const [stage, setStage] = useState('intake')
   const [selected, setSelected] = useState([])
   const [detected, setDetected] = useState([])
@@ -22,7 +18,6 @@ export default function App() {
   const [incident, setIncident] = useState(null)
   const [saving, setSaving] = useState(false)
   const [analyzeNote, setAnalyzeNote] = useState(null)
-  const [guest, setGuest] = useState(() => sessionStorage.getItem('scamsos.guest') !== '0')
   const [lang, setLang] = useState(() => localStorage.getItem('scamsos.lang') || 'en')
 
   const t = useMemo(() => makeT(lang), [lang])
@@ -30,31 +25,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('scamsos.lang', lang)
   }, [lang])
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      setAuthReady(true)
-    })
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s)
-      if (s) {
-        sessionStorage.removeItem('scamsos.guest')
-        setGuest(false)
-      }
-    })
-    return () => sub.subscription.unsubscribe()
-  }, [])
-
-  function startGuest() {
-    sessionStorage.setItem('scamsos.guest', '1')
-    setGuest(true)
-  }
-
-  function exitGuest() {
-    sessionStorage.setItem('scamsos.guest', '0')
-    setGuest(false)
-  }
 
   async function submitIntake(input) {
     setSaving(true)
@@ -113,64 +83,44 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, setLang, t }}>
-      {!authReady && (
-        <main>
-          <p className="status">Loading…</p>
-        </main>
-      )}
+      <main>
+        <header className="topbar no-print">
+          <span className="logo">ScamSOS</span>
+          <span className="topbar-right">
+            <ThemeToggle />
+            <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
+              {lang === 'en' ? 'BM' : 'EN'}
+            </button>
+          </span>
+        </header>
 
-      {authReady && !session && !guest && <AuthScreen onGuest={startGuest} />}
+        <Stepper stage={stage} />
+        <EmergencyBar />
 
-      {authReady && (session || guest) && (
-        <main>
-          <header className="topbar no-print">
-            <span className="logo">ScamSOS</span>
-            <span className="topbar-right">
-              <ThemeToggle />
-              <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
-                {lang === 'en' ? 'BM' : 'EN'}
-              </button>
-              <span className="badge">{session ? session.user.email : t('guestBadge')}</span>
-              {session ? (
-                <button className="link" onClick={() => supabase.auth.signOut()}>
-                  {t('signOut')}
-                </button>
-              ) : (
-                <button className="link" onClick={exitGuest}>
-                  {t('signIn')}
-                </button>
-              )}
-            </span>
-          </header>
+        {stage === 'intake' && (
+          <IntakeForm initialForm={form} saving={saving} onSubmit={submitIntake} />
+        )}
 
-          <Stepper stage={stage} />
-          <EmergencyBar />
+        {stage === 'pick' && (
+          <InstitutionPicker
+            initialSelected={detected}
+            detected={detected}
+            form={form}
+            analyzeNote={analyzeNote}
+            onBack={() => setStage('intake')}
+            onContinue={confirmInstitutions}
+          />
+        )}
 
-          {stage === 'intake' && (
-            <IntakeForm initialForm={form} saving={saving} onSubmit={submitIntake} />
-          )}
-
-          {stage === 'pick' && (
-            <InstitutionPicker
-              initialSelected={detected}
-              detected={detected}
-              form={form}
-              analyzeNote={analyzeNote}
-              onBack={() => setStage('intake')}
-              onContinue={confirmInstitutions}
-            />
-          )}
-
-          {stage === 'plan' && incident && (
-            <ActionPlan
-              incident={incident}
-              institutions={selected}
-              onToggle={toggleStep}
-              onReset={reset}
-            />
-          )}
-        </main>
-      )}
+        {stage === 'plan' && incident && (
+          <ActionPlan
+            incident={incident}
+            institutions={selected}
+            onToggle={toggleStep}
+            onReset={reset}
+          />
+        )}
+      </main>
     </LangContext.Provider>
   )
 }

@@ -249,10 +249,6 @@ main > :not(.topbar) {
   border-color: var(--ink-3);
 }
 
-.auth > .theme-toggle {
-  float: right;
-}
-
 .topbar .link {
   white-space: nowrap;
 }
@@ -477,61 +473,6 @@ footer strong {
 .status.error::before {
   content: '! ';
   font-weight: 800;
-}
-
-/* Auth */
-
-.auth {
-  max-width: 400px;
-  margin: var(--s-7) auto 0;
-}
-
-.auth .logo {
-  margin-bottom: var(--s-5);
-}
-
-.auth .primary {
-  width: 100%;
-}
-
-.auth > .link {
-  display: block;
-  margin: var(--s-2) auto 0;
-}
-
-.auth-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-3);
-  margin-bottom: var(--s-2);
-}
-
-.auth-top .logo {
-  margin-bottom: 0;
-}
-
-.auth-top-right {
-  display: flex;
-  align-items: center;
-  gap: var(--s-1);
-}
-
-/* Guest entry, below the sign-in form */
-.guest {
-  margin-top: var(--s-6);
-  padding-top: var(--s-5);
-  border-top: 1px solid var(--line);
-}
-
-.guest-btn {
-  display: flex;
-  width: 100%;
-  min-height: 52px;
-}
-
-.guest .status {
-  margin: var(--s-2) 0 0;
 }
 
 /* Forms */
@@ -1380,17 +1321,6 @@ details.panel[open] summary::before {
   /* Let the bottom bar sit flush with the screen edge. */
   main:has(> div > footer, .intake) {
     padding-bottom: 0;
-  }
-}
-
-/* Tablet and up: the sign-in form becomes a card. */
-@media (min-width: 640px) {
-  .auth {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    padding: var(--s-6);
-    box-shadow: var(--shadow);
   }
 }
 
