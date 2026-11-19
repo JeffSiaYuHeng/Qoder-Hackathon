@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b0f14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#050806" media="(prefers-color-scheme: dark)" />
     <script>
       // Apply a remembered light/dark choice before first paint (see src/ThemeToggle.jsx).
-      try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t } catch (e) {}
+      // Dark (black + green) is the brand default; a saved choice wins.
+      var t = 'dark'
+      try { t = localStorage.getItem('theme') || 'dark' } catch (e) {}
+      document.documentElement.dataset.theme = t
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

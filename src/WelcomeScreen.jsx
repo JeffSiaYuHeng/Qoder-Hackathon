@@ -23,7 +23,14 @@ export default function WelcomeScreen({ onStart }) {
         <EmergencyBar />
 
         <section className="welcome-hero">
+          <p className="welcome-tagline">{t('welcome.tagline')}</p>
           <h1>{t('welcome.title')}</h1>
+          {/* The big emergency button from the concept video: same action as "Get help now". */}
+          <button type="button" className="sos-orb" onClick={onStart}>
+            <span className="sos-orb-shield" aria-hidden="true" />
+            <strong>{t('welcome.orb')}</strong>
+            <span>{t('welcome.orbSub')}</span>
+          </button>
           <p className="sub">{t('welcome.sub')}</p>
           <div className="welcome-actions">
             <button type="button" className="primary" onClick={onStart}>
