@@ -6,6 +6,16 @@ const VERB = {
   print: 'Print',
 }
 
+// Same labels as the intake form, so the printed report never shows raw values like "whatsapp".
+const METHOD_LABELS = {
+  call: 'Phone call',
+  whatsapp: 'WhatsApp',
+  sms: 'SMS',
+  social: 'Social media',
+  marketplace: 'Marketplace / shopping',
+  other: 'Other',
+}
+
 const MISSING_HINTS = [
   ['amount', 'Add the amount if you know it'],
   ['scammer_phone', "Add the scammer's phone number"],
@@ -17,13 +27,14 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
   const steps = incident.steps
   const missing = MISSING_HINTS.filter(([field]) => !incident[field]).map(([, hint]) => hint)
   const emailSteps = steps.filter((s) => s.action === 'email')
+  const doneCount = steps.filter((s) => s.done).length
 
   return (
     <div>
       <h1 className="no-print">Your action plan</h1>
       <p className="sub no-print">
-        Do these in order. Every minute counts — the first hour is when money is
-        still recoverable.
+        Do these in order, starting now. Reporting within 24 hours gives the best
+        chance to freeze the money.
       </p>
 
       <section className="panel no-print">
@@ -45,6 +56,22 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
           </ul>
         )}
       </section>
+
+      <div
+        className="progress no-print"
+        role="progressbar"
+        aria-label="Steps done"
+        aria-valuemin={0}
+        aria-valuemax={steps.length}
+        aria-valuenow={doneCount}
+      >
+        <span className="progress-text">
+          {doneCount} of {steps.length} done
+        </span>
+        <span className="progress-track">
+          <span className="progress-fill" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+        </span>
+      </div>
 
       <ol className="steps no-print">
         {steps.map((s, idx) => (
@@ -109,7 +136,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
           <tbody>
             <tr>
               <th>Amount lost</th>
-              <td>{incident.amount ? `RM ${Number(incident.amount).toFixed(2)}` : 'Not known'}</td>
+              <td>{incident.amount ? `RM ${Number(incident.amount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}` : 'Not known'}</td>
             </tr>
             <tr>
               <th>Date/time of incident</th>
@@ -117,7 +144,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
             </tr>
             <tr>
               <th>How victim was contacted</th>
-              <td>{incident.contact_method || 'Not known'}</td>
+              <td>{METHOD_LABELS[incident.contact_method] || incident.contact_method || 'Not known'}</td>
             </tr>
             <tr>
               <th>Institutions involved</th>
