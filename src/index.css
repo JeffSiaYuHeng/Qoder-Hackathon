@@ -847,6 +847,43 @@ details.panel[open] summary::before {
   flex: none;
 }
 
+/* Stage-demo mode (?demo=1): toast instead of leaving the browser */
+
+.demo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  z-index: 50;
+  max-width: min(92vw, 420px);
+  padding: var(--s-3) var(--s-4);
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+  font-weight: 600;
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.demo-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+:root[data-demo='on'] .logo::after {
+  content: 'DEMO';
+  padding: 2px var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
 /* Printable report (on-screen preview looks like a sheet of paper) */
 
 .report {
