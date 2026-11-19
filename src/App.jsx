@@ -6,6 +6,8 @@ import IntakeForm from './IntakeForm'
 import ActionPlan from './ActionPlan'
 import { buildActionPlan } from './lib/plan'
 import ThemeToggle from './ThemeToggle'
+import Stepper from './Stepper'
+import EmergencyBar from './EmergencyBar'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -118,6 +120,9 @@ export default function App() {
           </button>
         </span>
       </header>
+
+      <Stepper stage={stage} />
+      {stage === 'pick' && <EmergencyBar />}
 
       {stage === 'pick' && (
         <InstitutionPicker

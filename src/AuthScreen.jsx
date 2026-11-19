@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from './lib/supabase'
 import ThemeToggle from './ThemeToggle'
+import EmergencyBar from './EmergencyBar'
 
 // HACK: demo account hardcoded for the on-stage flow
 const DEMO = { email: 'demo@scamsos.my', password: 'ScamSOS2026!' }
@@ -25,6 +26,7 @@ export default function AuthScreen() {
       <div className="auth">
         <ThemeToggle />
         <span className="logo">ScamSOS</span>
+        <EmergencyBar />
         <h1>Sign in to start</h1>
         <p className="sub">
           Scammed just now? Sign in, tell us what happened, and get your next steps in

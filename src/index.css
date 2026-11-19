@@ -746,6 +746,107 @@ details.panel[open] summary::before {
   margin: var(--s-2) 0 0;
 }
 
+/* Flow progress ("step 2 of 3"), like a checkout or delivery tracker */
+
+.stepper ol {
+  list-style: none;
+  margin: 0 0 var(--s-5);
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+.stepper li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  text-align: center;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.stepper li + li::before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: calc(-50% + 20px);
+  right: calc(50% + 20px);
+  height: 2px;
+  background: var(--line);
+}
+
+.stepper li.done + li::before {
+  background: var(--ok);
+}
+
+.stepper-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper .done {
+  color: var(--ink-2);
+}
+
+.stepper .done .stepper-dot {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: var(--surface);
+}
+
+.stepper .current {
+  color: var(--ink);
+}
+
+.stepper .current .stepper-dot {
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* Emergency hotline: reachable before sign-in and on the first screen */
+
+.sos {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0 0 var(--s-5);
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+}
+
+.sos-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+
+.sos-text strong {
+  font-size: var(--fs-md);
+  color: var(--ink);
+}
+
+.sos .action-btn {
+  flex: none;
+}
+
 /* Printable report (on-screen preview looks like a sheet of paper) */
 
 .report {
