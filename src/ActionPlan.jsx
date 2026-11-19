@@ -61,6 +61,24 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset, 
     }
   }
 
+  async function sendOne(report) {
+    if (!send.email) {
+      setSend((s) => ({ ...s, error: t('emailFirst') }))
+      return
+    }
+    setSend((s) => ({ ...s, busy: true, error: null, note: null }))
+    try {
+      const results = await sendAllReports(send.email, [report])
+      setSend((s) => ({
+        ...s,
+        busy: false,
+        statuses: { ...s.statuses, ...Object.fromEntries(results.map((r) => [r.institution_id, r])) },
+      }))
+    } catch (err) {
+      setSend((s) => ({ ...s, busy: false, error: err.message }))
+    }
+  }
+
   async function sendAll() {
     setSend((s) => ({ ...s, busy: true, error: null, note: null }))
     // A failed PDF must not block the emails — fall back to text-only.
@@ -220,9 +238,19 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset, 
               </summary>
               <p className="status">{r.subject}</p>
               <pre className="script">{r.body}</pre>
-              <a className="action-btn" href={r.mailto}>
-                {t('verb.email')}
-              </a>
+              <div className="footer-row">
+                <button
+                  type="button"
+                  className="action-btn"
+                  disabled={send.busy || !send.email}
+                  onClick={() => sendOne(r)}
+                >
+                  {status?.status === 'sent' ? t('sent') : t('sendOne')}
+                </button>
+                <a className="link" href={r.mailto}>
+                  {t('verb.email')}
+                </a>
+              </div>
             </details>
           )
         })}
