@@ -8,7 +8,7 @@
 | | |
 | --- | --- |
 | App | ScamSOS — guest-only React + Vite SPA; Supabase is read-only (institutions registry) |
-| Latest commit | `ebc6149` — welcome screen (no login, no accounts) merged onto guest-only flow + Gemini AI reports + PDF download/attachment |
+| Latest commit | `ab094e0` — auth remnants removed (no login strings, no dead `.badge` CSS, README/design docs synced); builds on `ebc6149` welcome + Gemini AI reports + PDF |
 | Golden path | Welcome → "Get help now" → tell story (voice or text) → AI autofill + detected institutions → confirm → action plan with AI report drafts → download PDF → email reports → print |
 | Build | `npm run build` passes |
 | Deploy | **Live: https://scamsos.vercel.app** (Vercel CLI, prod env vars set; welcome → intake → picker → plan verified on the deployed URL, including AI report bodies and the AI police statement via `/api/report`) |
@@ -16,7 +16,7 @@
 
 ## What works today
 
-- **No auth** — no sign-in, no demo login, no Supabase session. `AuthScreen` is deleted; `src/lib/supabase.js` is used only to read the institutions registry.
+- **No auth** — no sign-in, no form, no demo login, no Supabase session. `AuthScreen` is deleted and no login strings or CSS remain; `src/lib/supabase.js` is used only to read the institutions registry.
 - **Welcome screen** — `WelcomeScreen.jsx` opens the app: 997 bar, headline, one "Get help now" CTA, the three-step flow and a trust line. Entry choice persists in `sessionStorage` (`scamsos.entry`); there is no login button.
 - **Story-first flow** — intake → confirm institutions → action plan (`Stepper.jsx` FLOW). `/api/analyze` (Gemini `gemini-3.8-flash`, structured JSON) autofills amount/time/method/suspect details and detects institutions (badged in the picker); user confirms/edits before the plan is built.
 - **Institution picker** — reads the `institutions` registry from Supabase; multi-select by slug across banks, e-wallets and platforms; shows AI-extracted summary + detected chips.
@@ -97,3 +97,4 @@ After any task that changes app behavior, schema, or scope:
 - **2026-11-19** — Removed sign-in: deleted `AuthScreen.jsx`, auth/session/guest state and topbar account controls; app opens straight into intake. Reports now drafted by Gemini through `/api/report` (`server/report.js`, `src/lib/report.js`, strict validation, 20 s deadline → templates) instead of the local-only Qoder SDK; `src/App.jsx` merges the AI bodies + statement in the background. Verified locally and on https://scamsos.vercel.app (`/api/report` → `source:"ai"`); build passes. Docs updated; uncommitted at the time of writing.
 - **2026-11-19** — Merged the welcome-screen commit but dropped its UI-only login per owner request: `WelcomeScreen` keeps the 997 bar, one "Get help now" CTA and the flow steps; `AuthScreen`, the `login` entry state and the fake user are gone. LangSwitch + zh dictionary preserved. Verified welcome → intake → plan with AI reports in-browser; build passes. Uncommitted at the time of writing.
 - **2026-11-20** — Live golden path re-verified on https://scamsos.vercel.app with two institutions selected (Maybank, Shopee): `/api/report` → 200, AI bodies render in both report panels (suspect account + RM amount verbatim, disclaimer kept) and the AI statement replaces the raw story in the police report. (An earlier scripted test hit a 400 by continuing with zero institutions — the picker itself blocks that; no app bug.) Docs updated; committed.
+- **2026-11-20** — Auth cleanup: removed unused `login.note`/`login.back` strings from all three locales, the dead `.badge` CSS (and its `.topbar .badge` override), and "sign-in" wording in `EmergencyBar`/CSS comments; README and design docs synced to the no-account, in-memory flow. Build passes; committed (`ab094e0`).
