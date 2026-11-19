@@ -13,6 +13,7 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 | [04_PRD.md](04_PRD.md) | Requirements, screens, demo script |
 | [05_PRODUCT_PLAN.md](05_PRODUCT_PLAN.md) | Earlier 2-hour plan (background) |
 | [06_PROJECT_SNAPSHOT.md](06_PROJECT_SNAPSHOT.md) | Living status: what works, gaps, next steps, update log |
+| [Design.md](Design.md) | Visual/UX design doc — **placeholder**, to be replaced |
 
 `AGENTS.md` stays at the repo root, not here — agent tooling auto-loads it from there.
 
