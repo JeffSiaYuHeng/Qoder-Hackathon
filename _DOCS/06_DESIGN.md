@@ -98,6 +98,11 @@ All class names come from the existing JSX, so restyling never needs a component
 | `.status.error` | Error line | Danger colour with a "!" prefix |
 | `.badge` | Signed-in email | Hidden on phones (≤ 560 px) to keep the header on one line |
 | `.topbar` | App bar | Sticky, translucent with blur, like a native app header |
+| `.stepper` | Flow progress ("Where it went → What happened → Action plan") | Under the app bar on every signed-in screen. Done = green ✓, current = accent ring. Steps come from the `FLOW` array in `src/Stepper.jsx` |
+| `.sos` | Call 997 bar (`EmergencyBar.jsx`) | On the sign-in screen and the first screen, so a victim can call NSRC without signing in or typing anything (PRD F1) |
+| `.card-avatar` | Institution badge (MBB, CIMB, TNG…) | Round badge with the short name Malaysians use. On phones the tiles become a full-width list, like a banking app's bank picker |
+| `.progress` | "2 of 6 done" bar on the action plan | Green fill grows as steps are ticked |
+| `.demo-toast` | Stage-demo message | Only with `?demo=1` (see §11) |
 | `.step + .step::before` | Timeline connector | Thin line between checklist rows; turns green after a done step (parcel-tracking style) |
 
 ## 7. Responsive layout
@@ -144,18 +149,18 @@ Supabase was mocked at the network layer for these runs, so they cover the UI, n
 - Chrome DevTools → device toolbar → **iPhone 14 Pro** (393 px). The layout was tested at 390 px, so this matches.
 - Undock DevTools into its own window so only the phone frame is projected.
 - Tap the ☾ / ☀ button once to show both themes.
-- **Careful with Call and Email on a laptop.** A `tel:` link asks to open an outside app (likely FaceTime on a Mac) and a `mailto:` link opens Mail.app. Until the `?demo=1` mode from [04_PRD.md](04_PRD.md) §9 exists, tick the step's checkbox instead of tapping those buttons.
+- **Open the app with `?demo=1`** (e.g. `https://…/?demo=1`). A small DEMO tag appears next to the logo, and Call / Email buttons show an in-app message ("Calling 997… (demo: no real call)") instead of launching FaceTime or Mail on the laptop. Without the flag, real users get real `tel:` / `mailto:` links. Code: `src/demoMode.js`.
 - "Print police-ready report" is safe and looks good: it opens Chrome's print preview.
 
 ## 12. UX backlog (needs component changes, not CSS)
 
 | # | Issue | Why it matters | Suggested fix |
 |---|---|---|---|
-| 1 | The sign-in screen sits in front of a panic flow | Breaks PRD F1 ("call 997 with a single tap, without entering any data"); costs the victim time | Show the 997 and bank call actions before sign-in, or drop sign-in for the victim flow |
-| 2 | Plan screen says "the first hour is when money is still recoverable" | Not supported by an official source (see §9) | "Call now. Reporting within 24 hours gives the best chance to freeze the money." |
-| 3 | `tel:` / `mailto:` leave the browser in the stage demo | System dialogs on stage | `?demo=1`: show "Calling 997…" / "Email draft ready" in the app instead |
+| 1 | The sign-in screen sits in front of a panic flow | Breaks PRD F1 ("call 997 with a single tap, without entering any data"); costs the victim time | **Partly done:** a Call 997 bar now sits on the sign-in screen. Bank fraud lines still need sign-in; dropping sign-in for the victim flow would finish it |
+| 2 | ~~Plan screen says "the first hour is when money is still recoverable"~~ | Not supported by an official source (see §9) | **Done:** now "Reporting within 24 hours gives the best chance to freeze the money." |
+| 3 | ~~`tel:` / `mailto:` leave the browser in the stage demo~~ | System dialogs on stage | **Done:** `?demo=1` (§11) |
 | 4 | Raw Supabase error messages are shown to users | Jargon at the worst moment | Map errors to plain sentences; keep the raw message in the console |
-| 5 | Report shows `whatsapp` (raw value) and `RM 4800.00` | Looks unfinished on the printed report | Use the same labels as the intake form and `en-MY` number formatting |
+| 5 | ~~Report shows `whatsapp` (raw value) and `RM 4800.00`~~ | Looks unfinished on the printed report | **Done:** "WhatsApp", "RM 4,800.00" |
 
 ## 13. Sources
 

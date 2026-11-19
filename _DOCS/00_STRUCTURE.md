@@ -45,6 +45,9 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
     ├── IntakeForm.jsx        # incident intake form
     ├── ActionPlan.jsx        # checklist, call script, print report, mailto drafts
     ├── ThemeToggle.jsx       # light/dark switch (top bar + sign-in screen)
+    ├── Stepper.jsx           # flow progress: Where it went → What happened → Action plan
+    ├── EmergencyBar.jsx      # Call 997 bar, before sign-in and on the first screen
+    ├── demoMode.js           # ?demo=1: Call/Email show an in-app message instead of leaving the browser
     ├── index.css             # design tokens at the top, then component styles + print CSS
     └── lib/
         ├── supabase.js       # single Supabase client
