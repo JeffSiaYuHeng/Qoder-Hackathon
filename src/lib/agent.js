@@ -1,7 +1,22 @@
 import { DEMO_MODE, CANNED_ANALYSIS, cannedLookup } from './demo'
 
-export async function analyzeStory(story) {
-  if (DEMO_MODE) return CANNED_ANALYSIS
+// The voice autofill (IntakeForm) and the submit step (App) both analyse the story. Cache by text
+// so an unchanged story costs one Gemini call, not two. Failed calls are not cached.
+const analysisCache = new Map()
+
+export function analyzeStory(story) {
+  if (DEMO_MODE) return Promise.resolve(CANNED_ANALYSIS)
+  const key = story.trim()
+  if (!analysisCache.has(key)) {
+    analysisCache.set(key, requestAnalysis(key).catch((err) => {
+      analysisCache.delete(key)
+      throw err
+    }))
+  }
+  return analysisCache.get(key)
+}
+
+async function requestAnalysis(story) {
   const res = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

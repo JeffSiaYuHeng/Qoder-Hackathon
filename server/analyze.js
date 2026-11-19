@@ -25,7 +25,7 @@ function buildPrompt(story, institutions) {
   const list = institutions.map((i) => `${i.slug} (${i.name}, ${i.type})`).join('; ')
   const nowMYT = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 16) + '+08:00'
   return [
-    'You extract structured data from a scam victim\'s story. The victim may write in English or Malay.',
+    'You extract structured data from a scam victim\'s story. The victim may write in English, Malay or Chinese, or a mix.',
     `Current date/time in Malaysia (UTC+8): ${nowMYT}. Resolve relative times like "today" or "yesterday" against it.`,
     'Rules:',
     '- Extract ONLY facts explicitly stated in the story. NEVER guess or invent values. Unknown = null.',

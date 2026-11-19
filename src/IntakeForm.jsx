@@ -1,9 +1,20 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useI18n } from './lib/i18n'
+import { analyzeStory } from './lib/agent'
 import { DEMO_MODE, CANNED_STORY } from './lib/demo'
 import VoiceDialog from './VoiceDialog'
 
 const METHODS = ['call', 'whatsapp', 'sms', 'social', 'marketplace', 'other']
+
+// Boxes the AI may fill from the spoken story, with the label each one shows.
+const AUTOFILL = {
+  amount: 'amountLabel',
+  occurred_at: 'whenLabel',
+  contact_method: 'methodLabel',
+  scammer_phone: 'phoneLabel',
+  scammer_account: 'accountLabel',
+  transaction_ref: 'refLabel',
+}
 
 const EMPTY_FORM = {
   victim_summary: '',
@@ -19,17 +30,49 @@ export default function IntakeForm({ initialForm, saving, error, onBack, onSubmi
   const { t } = useI18n()
   const [form, setForm] = useState(initialForm || EMPTY_FORM)
   const [voiceOpen, setVoiceOpen] = useState(false)
+  const [autofill, setAutofill] = useState(null) // null | { state: 'working' | 'done' | 'error', filled: [] }
+  const formRef = useRef(form)
+  formRef.current = form
 
-  function addTranscript(text) {
-    setForm((f) => ({
-      ...f,
-      victim_summary: f.victim_summary.trim() ? `${f.victim_summary.trim()} ${text}` : text,
-    }))
+  // Voice: add the words to the story, then let the AI fill the other boxes from the whole story,
+  // on screen, so the victim can check them before going on. Only empty boxes are filled, so it
+  // never overwrites what the victim typed.
+  async function addTranscript(text) {
+    const before = formRef.current.victim_summary.trim()
+    const story = before ? `${before} ${text}` : text
+    setForm((f) => ({ ...f, victim_summary: story }))
+    setAutofill({ state: 'working', filled: [] })
+    try {
+      const { fields = {} } = await analyzeStory(story)
+      const current = formRef.current
+      const updates = {}
+      for (const key of Object.keys(AUTOFILL)) {
+        const value = fields[key]
+        if (value == null || String(current[key] ?? '').trim()) continue
+        const next = key === 'occurred_at' ? String(value).slice(0, 16) : String(value)
+        if (next) updates[key] = next
+      }
+      setForm((f) => {
+        const merged = { ...f }
+        for (const [key, value] of Object.entries(updates)) if (!String(f[key] ?? '').trim()) merged[key] = value
+        return merged
+      })
+      setAutofill({ state: 'done', filled: Object.keys(updates) })
+    } catch {
+      setAutofill({ state: 'error', filled: [] })
+    }
   }
 
   function set(field) {
-    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+    return (e) => {
+      const { value } = e.target
+      setForm((f) => ({ ...f, [field]: value }))
+      // Once the victim edits an AI-filled box it's theirs: drop the "please check" highlight.
+      setAutofill((a) => (a?.filled.includes(field) ? { ...a, filled: a.filled.filter((k) => k !== field) } : a))
+    }
   }
+
+  const aiFilled = (field) => (autofill?.filled.includes(field) ? 'ai-filled' : undefined)
 
   function submit(e) {
     e.preventDefault()
@@ -68,22 +111,32 @@ export default function IntakeForm({ initialForm, saving, error, onBack, onSubmi
             </button>
           )}
         </div>
+        {autofill && (
+          <p className={`autofill-status${autofill.state === 'error' ? ' is-error' : ''}`} role="status">
+            {autofill.state === 'working' && t('autofillWorking')}
+            {autofill.state === 'error' && t('autofillError')}
+            {autofill.state === 'done' &&
+              (autofill.filled.length
+                ? t('autofillDone', { fields: autofill.filled.map((k) => t(AUTOFILL[k])).join(', ') })
+                : t('autofillNone'))}
+          </p>
+        )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label>
             {t('amountLabel')}
-            <input type="number" min="0" step="0.01" value={form.amount} onChange={set('amount')} />
+            <input type="number" min="0" step="0.01" value={form.amount} onChange={set('amount')} className={aiFilled('amount')} />
           </label>
           <label>
             {t('whenLabel')}
-            <input type="datetime-local" value={form.occurred_at} onChange={set('occurred_at')} />
+            <input type="datetime-local" value={form.occurred_at} onChange={set('occurred_at')} className={aiFilled('occurred_at')} />
           </label>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label>
             {t('methodLabel')}
-            <select value={form.contact_method} onChange={set('contact_method')}>
+            <select value={form.contact_method} onChange={set('contact_method')} className={aiFilled('contact_method')}>
               <option value="">{t('methodSelect')}</option>
               {METHODS.map((m) => (
                 <option key={m} value={m}>
@@ -94,18 +147,18 @@ export default function IntakeForm({ initialForm, saving, error, onBack, onSubmi
           </label>
           <label>
             {t('phoneLabel')}
-            <input type="tel" value={form.scammer_phone} onChange={set('scammer_phone')} />
+            <input type="tel" value={form.scammer_phone} onChange={set('scammer_phone')} className={aiFilled('scammer_phone')} />
           </label>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label>
             {t('accountLabel')}
-            <input value={form.scammer_account} onChange={set('scammer_account')} />
+            <input value={form.scammer_account} onChange={set('scammer_account')} className={aiFilled('scammer_account')} />
           </label>
           <label>
             {t('refLabel')}
-            <input value={form.transaction_ref} onChange={set('transaction_ref')} />
+            <input value={form.transaction_ref} onChange={set('transaction_ref')} className={aiFilled('transaction_ref')} />
           </label>
         </div>
 
