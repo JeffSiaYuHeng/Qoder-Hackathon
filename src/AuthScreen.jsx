@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from './lib/supabase'
 import { useI18n } from './lib/i18n'
 import ThemeToggle from './ThemeToggle'
+import LangSwitch from './LangSwitch'
 import EmergencyBar from './EmergencyBar'
 
 // HACK: demo account hardcoded for the on-stage flow
@@ -29,9 +30,7 @@ export default function AuthScreen({ onGuest }) {
         <div className="auth-top">
           <span className="logo">ScamSOS</span>
           <span className="auth-top-right">
-            <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
-              {lang === 'en' ? 'BM' : 'EN'}
-            </button>
+            <LangSwitch />
             <ThemeToggle />
           </span>
         </div>

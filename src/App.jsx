@@ -6,6 +6,7 @@ import InstitutionPicker from './InstitutionPicker'
 import IntakeForm from './IntakeForm'
 import ActionPlan from './ActionPlan'
 import ThemeToggle from './ThemeToggle'
+import LangSwitch from './LangSwitch'
 import Stepper from './Stepper'
 import EmergencyBar from './EmergencyBar'
 import { buildActionPlan } from './lib/plan'
@@ -29,6 +30,7 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('scamsos.lang', lang)
+    document.documentElement.lang = { en: 'en', bm: 'ms', zh: 'zh-Hans' }[lang] || 'en'
   }, [lang])
 
   useEffect(() => {
@@ -127,9 +129,7 @@ export default function App() {
             <span className="logo">ScamSOS</span>
             <span className="topbar-right">
               <ThemeToggle />
-              <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
-                {lang === 'en' ? 'BM' : 'EN'}
-              </button>
+              <LangSwitch />
               <span className="badge">{session ? session.user.email : t('guestBadge')}</span>
               {session ? (
                 <button className="link" onClick={() => supabase.auth.signOut()}>
