@@ -8,7 +8,7 @@
 | | |
 | --- | --- |
 | App | ScamSOS — React + Vite SPA backed by Supabase |
-| Latest commit | `6b33255` — voice intake + server API handlers; merge of `origin/main` (theme, stepper, emergency bar, demo mode) in progress — merge commit pending |
+| Latest commit | Merges of `origin/main` on 2026-11-19 — UI (theme, stepper, emergency bar, demo mode) plus the voice-intake spec docs |
 | Golden path | Sign in **or continue as guest** → pick institutions → intake → action plan → print |
 | Build | `npm run build` configured; a `dist/` build exists |
 | Deploy | Not confirmed in-repo; `vercel deploy` is available |
@@ -79,6 +79,7 @@ After any task that changes app behavior, schema, or scope:
 
 ## Update log
 
+- **2026-11-19** — Merged follow-up `origin/main` docs commits before push: `07_VOICE_INTAKE.md` spec, doc-list and PRD intake updates; conflicts in `00_STRUCTURE.md` and `04_PRD.md` resolved.
 - **2026-11-19** — All docs moved into `_DOCS/` and renamed to numbered uppercase files (`00_STRUCTURE` … `05_PRODUCT_PLAN`).
 - **2026-11-19** — Auth gate and full incident flow committed (`bbd7adb`); `incidents.user_id` added to the schema.
 - **2026-11-19** — EN/BM i18n added (`src/lib/i18n.js`), committed (`298f219`).

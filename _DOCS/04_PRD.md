@@ -82,6 +82,9 @@ Priority: **P0** = must work on stage · **P1** = build if time allows · **P2**
 **Done when:** the user can call 997 with a single tap, without entering any data, and can reach the institution picker as a guest without creating an account.
 
 ### F2. What happened: voice + text intake (P0)
+
+> **Updated plan: "Talk to ScamSOS".** A short call-style conversation with an AI assistant (the victim speaks, the AI asks at most 2 follow-up questions) fills every intake field, not only the text box. Screens, states, spoken lines and the `/api/voice-intake` contract: [07_VOICE_INTAKE.md](07_VOICE_INTAKE.md). The shipped version today is press-and-hold dictation via `POST /api/stt`; the call-style flow is specified, not built.
+
 - **Voice input** via Google AI Studio (Gemini) speech-to-text: the browser records the mic, `POST /api/stt` transcribes it, and the transcript lands in the editable box. The API key stays server-side.
 - **Fallback:** the box is always typeable; if the mic or API fails, show the error inline and let the user continue. **Demo fallback:** a canned transcript can be pasted in.
 - The text box can always be edited.

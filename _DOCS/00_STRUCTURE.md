@@ -15,6 +15,7 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 | [06_PROJECT_SNAPSHOT.md](06_PROJECT_SNAPSHOT.md) | Living status: what works, gaps, next steps, update log |
 | [06_DESIGN.md](06_DESIGN.md) | Design system: colour, type, components, light/dark theme, copy rules, demo setup |
 | [Design.md](Design.md) | Superseded by 06_DESIGN.md — earlier placeholder notes |
+| [07_VOICE_INTAKE.md](07_VOICE_INTAKE.md) | "Talk to ScamSOS": a short call-style AI conversation that fills the intake form — screens, states, spoken lines, `/api/voice-intake` contract |
 
 `AGENTS.md` stays at the repo root, not here — agent tooling auto-loads it from there.
 
@@ -31,9 +32,9 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 │   ├── 05_PRODUCT_PLAN.md
 │   ├── 06_PROJECT_SNAPSHOT.md
 │   ├── 06_DESIGN.md
+│   ├── 07_VOICE_INTAKE.md
 │   ├── Design.md             # superseded placeholder
 │   └── mockup.html           # static mockup linked from the PRD
-
 ├── AGENTS.md                 # hackathon rules for agents
 ├── api/
 │   ├── stt.js                # Vercel function: speech-to-text
