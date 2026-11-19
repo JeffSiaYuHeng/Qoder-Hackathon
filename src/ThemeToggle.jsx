@@ -4,8 +4,7 @@ import { useState } from 'react'
 // applied before first paint by the inline script in index.html) and remembers a change.
 function currentTheme() {
   const set = document.documentElement.dataset.theme
-  if (set) return set
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return set || 'dark' // dark is the brand default (see index.html)
 }
 
 export default function ThemeToggle() {
