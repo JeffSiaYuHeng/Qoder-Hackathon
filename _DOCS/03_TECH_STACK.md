@@ -31,7 +31,7 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 │   ├── InstitutionPicker.jsx
 │   ├── IntakeForm.jsx
 │   ├── ActionPlan.jsx    # checklist, script, print report, mailto drafts
-│   ├── index.css
+│   ├── index.css         # Tailwind entry, theme tokens, report + print CSS
 │   └── lib/
 │       ├── supabase.js   # single client export
 │       ├── i18n.js       # EN/BM dictionary + useI18n
@@ -81,6 +81,26 @@ vercel deploy        # preview deploy
 - Supabase Auth email/password; `incidents.user_id` references `auth.users`.
 - Demo credential (created via admin API, email confirmed): **demo@scamsos.my / ScamSOS2026!**
 - HACK: the demo credential is hardcoded in `src/AuthScreen.jsx` so the on-stage login is one click.
+
+## Styling (Tailwind CSS)
+
+- **Version**: Tailwind CSS v4 (`tailwindcss@4.3.5`) with the first-party `@tailwindcss/vite` plugin. Registered in `vite.config.js`; **no** `tailwind.config.js`, no PostCSS config — v4 needs neither.
+- **Entry**: `src/index.css` starts with `@import "tailwindcss";`.
+- **Theme tokens** (in `@theme`, used as normal utilities like `bg-canvas`, `text-muted`, `border-edge`):
+
+  | Token | Value | Use |
+  | --- | --- | --- |
+  | `canvas` | `#0b0f14` | page background |
+  | `panel` | `#141b24` | cards, inputs, panels |
+  | `edge` / `edge-strong` | `#232e39` / `#3a4a5a` | borders, hover borders |
+  | `ink` / `muted` / `dim` | `#e8edf2` / `#93a1b0` / `#6f7f8f` | text levels |
+  | `brand` / `brand-soft` | `#ff5a5f` / `#241518` | accent and selected-card tint |
+  | `btn` | `#1d2732` | secondary action pills |
+
+- **Component classes** (`@layer components`, reused across screens): `.field`, `.btn-primary`, `.link`, `.panel`, `.card`, `.card-selected`, `.action-btn`.
+- **Everything else is inline utilities** in the JSX; one-off hex values use arbitrary values (`text-[#ffb3b5]`, `bg-[#0f151c]`).
+- **Hand-written CSS is deliberate** for `.report`, `.report-*` and the `@media print` block. Screen elements that must not print carry `.no-print`. Do not convert the print report to utilities — keep it in `src/index.css` so `window.print()` stays predictable.
+- `html { color-scheme: dark }` keeps native inputs/selects dark; form controls rely on Tailwind Preflight for font inheritance.
 
 ## Data model
 
