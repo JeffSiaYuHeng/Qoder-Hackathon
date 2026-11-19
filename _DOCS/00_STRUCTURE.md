@@ -13,6 +13,7 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 | [04_PRD.md](04_PRD.md) | Requirements, screens, demo script |
 | [05_PRODUCT_PLAN.md](05_PRODUCT_PLAN.md) | Earlier 2-hour plan (background) |
 | [06_DESIGN.md](06_DESIGN.md) | Design system: colour, type, components, light/dark theme, copy rules, demo setup |
+| [07_VOICE_INTAKE.md](07_VOICE_INTAKE.md) | Voice intake: the AI listens and fills the form — flow, states, `/api/voice-intake` contract |
 
 `AGENTS.md` stays at the repo root, not here — agent tooling auto-loads it from there.
 
@@ -27,7 +28,8 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 │   ├── 03_TECH_STACK.md
 │   ├── 04_PRD.md
 │   ├── 05_PRODUCT_PLAN.md
-│   └── 06_DESIGN.md
+│   ├── 06_DESIGN.md
+│   └── 07_VOICE_INTAKE.md
 ├── AGENTS.md                 # hackathon rules for agents
 ├── db/
 │   ├── schema.sql            # tables (apply in Supabase SQL editor)

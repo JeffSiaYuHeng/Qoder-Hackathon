@@ -81,6 +81,9 @@ Priority: **P0** = must work on stage · **P1** = build if time allows · **P2**
 **Done when:** the user can call 997 with a single tap, without entering any data.
 
 ### F2. What happened: voice + text intake (P0)
+
+> **Updated plan:** the AI listens to the recording and fills every intake field, not only the text box. Flow, states and the `/api/voice-intake` contract: [07_VOICE_INTAKE.md](07_VOICE_INTAKE.md).
+
 - **Voice input** with the browser's built-in speech-to-text (Web Speech API, `webkitSpeechRecognition`, `lang = 'en-MY'`, interim results shown live in the text box).
 - **Fallback:** if the browser doesn't support it (Firefox) or permission is denied, hide the mic button and type instead. **Demo fallback:** a pre-recorded transcript plays in with the same animation as the mockup.
 - The text box can always be edited.
