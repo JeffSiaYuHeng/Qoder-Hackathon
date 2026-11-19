@@ -103,6 +103,7 @@ All class names come from the existing JSX, so restyling never needs a component
 | `.card-avatar` | Institution badge (MBB, CIMB, TNG…) | Round badge with the short name Malaysians use. On phones the tiles become a full-width list, like a banking app's bank picker |
 | `.progress` | "2 of 6 done" bar on the action plan | Green fill grows as steps are ticked |
 | `.demo-toast` | Stage-demo message | Only with `?demo=1` (see §11) |
+| `.talk*`, `.field-ai` / `.field-check` / `.field-missing` | "Talk to ScamSOS" screen and AI-filled field badges | Specified in [07_VOICE_INTAKE.md](07_VOICE_INTAKE.md) §3; not built yet |
 | `.step + .step::before` | Timeline connector | Thin line between checklist rows; turns green after a done step (parcel-tracking style) |
 
 ## 7. Responsive layout

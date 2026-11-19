@@ -82,7 +82,7 @@ Priority: **P0** = must work on stage · **P1** = build if time allows · **P2**
 
 ### F2. What happened: voice + text intake (P0)
 
-> **Updated plan:** the AI listens to the recording and fills every intake field, not only the text box. Flow, states and the `/api/voice-intake` contract: [07_VOICE_INTAKE.md](07_VOICE_INTAKE.md).
+> **Updated plan: "Talk to ScamSOS".** A short call-style conversation with an AI assistant (the victim speaks, the AI asks at most 2 follow-up questions) fills every intake field, not only the text box. Screens, states, spoken lines and the `/api/voice-intake` contract: [07_VOICE_INTAKE.md](07_VOICE_INTAKE.md).
 
 - **Voice input** with the browser's built-in speech-to-text (Web Speech API, `webkitSpeechRecognition`, `lang = 'en-MY'`, interim results shown live in the text box).
 - **Fallback:** if the browser doesn't support it (Firefox) or permission is denied, hide the mic button and type instead. **Demo fallback:** a pre-recorded transcript plays in with the same animation as the mockup.
