@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { supabase } from './lib/supabase'
 import { useI18n } from './lib/i18n'
+import ThemeToggle from './ThemeToggle'
+import EmergencyBar from './EmergencyBar'
 
 // HACK: demo account hardcoded for the on-stage flow
 const DEMO = { email: 'demo@scamsos.my', password: 'ScamSOS2026!' }
@@ -22,41 +24,43 @@ export default function AuthScreen({ onGuest }) {
   }
 
   return (
-    <main className="mx-auto max-w-[720px] px-5 pb-16 pt-8">
-      <div className="mx-auto mt-12 max-w-[380px]">
-        <div className="flex items-center justify-between">
-          <span className="font-bold tracking-wide text-brand">ScamSOS</span>
-          <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
-            {lang === 'en' ? 'BM' : 'EN'}
-          </button>
+    <main>
+      <div className="auth">
+        <div className="auth-top">
+          <span className="logo">ScamSOS</span>
+          <span className="auth-top-right">
+            <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
+              {lang === 'en' ? 'BM' : 'EN'}
+            </button>
+            <ThemeToggle />
+          </span>
         </div>
-        <h1 className="mb-3 text-[28px] font-semibold leading-tight">{t('signInTitle')}</h1>
-        <p className="mb-8 leading-relaxed text-muted">{t('signInSub')}</p>
+        <EmergencyBar />
+        <h1>{t('signInTitle')}</h1>
+        <p className="sub">{t('signInSub')}</p>
 
         <form onSubmit={(e) => signIn(null, e)}>
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+          <label>
             {t('email')}
             <input
               type="email"
-              className="field"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
             />
           </label>
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+          <label>
             {t('password')}
             <input
               type="password"
-              className="field"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
             />
           </label>
-          <button className="btn-primary" disabled={busy}>
+          <button className="primary" disabled={busy}>
             {busy ? t('signingIn') : t('signIn')}
           </button>
         </form>
@@ -64,17 +68,13 @@ export default function AuthScreen({ onGuest }) {
         <button className="link" onClick={() => signIn(DEMO)} disabled={busy}>
           {t('useDemo')}
         </button>
-        {error && <p className="mt-2.5 text-xs text-red-300">{error}</p>}
+        {error && <p className="status error">{error}</p>}
 
-        <div className="mt-8 border-t border-edge pt-6">
-          <button
-            className="w-full cursor-pointer rounded-[10px] border border-edge-strong bg-btn px-5 py-3 text-[15px] font-semibold text-ink hover:border-brand disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={onGuest}
-            disabled={busy}
-          >
+        <div className="guest">
+          <button className="action-btn guest-btn" onClick={onGuest} disabled={busy}>
             {t('continueAsGuest')}
           </button>
-          <p className="mt-2.5 text-xs text-dim">{t('guestNote')}</p>
+          <p className="status">{t('guestNote')}</p>
         </div>
       </div>
     </main>

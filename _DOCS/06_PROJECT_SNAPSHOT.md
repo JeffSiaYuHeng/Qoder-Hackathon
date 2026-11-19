@@ -8,11 +8,11 @@
 | | |
 | --- | --- |
 | App | ScamSOS — React + Vite SPA backed by Supabase |
-| Latest commit | `d339064` — placeholder design doc |
+| Latest commit | `6b33255` — voice intake + server API handlers; merge of `origin/main` (theme, stepper, emergency bar, demo mode) in progress — merge commit pending |
 | Golden path | Sign in **or continue as guest** → pick institutions → intake → action plan → print |
 | Build | `npm run build` configured; a `dist/` build exists |
 | Deploy | Not confirmed in-repo; `vercel deploy` is available |
-| Demo blockers recorded | None as of the latest commit |
+| Demo blockers recorded | Uncommitted `api/analyze.js` + `server/analyze.js` edits swap Gemini for the Qoder Agent SDK (local `qodercli` only) and will not be in the merge commit |
 
 ## What works today
 
@@ -24,14 +24,18 @@
 - **Action plan** — `src/lib/plan.js` builds ordered steps, a call script and `mailto:` drafts **client-side** (rule-based LLM stand-in), localized EN/BM.
 - **Persistence** — on submit, writes `incidents`, `incident_institutions`, `action_steps`; ticking a step updates `action_steps.done`.
 - **Outputs** — `tel:` / open / maps / email buttons, call script panel, printable police-ready report.
-- **i18n** — EN/BM toggle in the topbar, persisted in `localStorage` (`scamsos.lang`).
-- **Styling** — Tailwind CSS v4 via `@tailwindcss/vite`; theme tokens in `src/index.css`, printable-report and `@media print` CSS hand-written.
+- **i18n** — EN/BM toggle in the topbar, persisted in `localStorage` (`scamsos.lang`); includes the `stepsDone` progress label.
+- **Theme** — light/dark via `ThemeToggle.jsx`: device preference by default, a manual pick sets `data-theme` on `<html>`. All colours are design tokens at the top of `src/index.css`.
+- **Flow chrome** — `Stepper.jsx` (Where it went → What happened → Action plan) and `EmergencyBar.jsx` (Call 997, before sign-in and on the first screen).
+- **Demo mode** — `?demo=1` (`src/demoMode.js`) intercepts `tel:`/`mailto:` clicks and shows an in-app toast, so the stage laptop never leaves the browser.
+- **Styling** — Tailwind CSS v4 (`@tailwindcss/vite`, `@import "tailwindcss"` + a `@theme` bridge to the design-system tokens at the top of `src/index.css`), **plus** the design-system CSS: light/dark token sets and component classes (`.card`, `.panel`, `.step`, `.action-btn`, `.primary`, `.link`, `.card-grid`, voice dialog, print CSS). Component classes are unlayered, so they win over utilities. Spec in [06_DESIGN.md](06_DESIGN.md).
 
 ## Not built (PRD-only)
 
-- `POST /api/analyze`, `/api/lookup`, `/api/send` — no LLM, no live agent lookup, no server-side email sending.
+- `POST /api/analyze`, `/api/lookup`, `/api/send` — handlers exist (`api/*.js` + `server/*.js`, also mounted in dev by `vite.config.js`), but the app UI does not call them yet: no LLM plan, no live agent lookup, no server-side email sending in the flow. `src/lib/agent.js` wrappers are unused.
 - One-click “send all reports” from a team inbox — email today is `mailto:` only.
-- `?demo=1` fallback switch, screenshot OCR, case tracking.
+- Screenshot OCR, case tracking.
+- *(Removed from this list: `?demo=1` fallback switch — now built, see Theme/Flow chrome/Demo mode above.)*
 - Voice input is implemented and the hold/release flow was verified in-browser with a fake mic stream (speech WAV → transcript appended to the form); a real microphone still needs one manual permission-prompt check.
 
 ## Known gaps / decisions
@@ -39,7 +43,7 @@
 1. **Privacy claim vs storage.** [04_PRD.md](04_PRD.md) §9 says incident data is never stored, but `src/App.jsx` writes full incidents to Supabase with RLS off. Guest mode only removes `user_id` — the story, amount and suspect details are still stored. Fix the wording or the behavior before showing both on stage.
 2. **PRD schema drift.** PRD §8 describes `institutions` with `kind`, `fraud_hotline`, `official_domains`, etc.; the live table uses `type`, `hotline`, `report_url`, `support_email`.
 3. **`reports` table is unused** — the printable report is client-rendered, not persisted as a report row.
-4. **`mockup.html` is linked from the PRD but missing** from the repo.
+4. **`mockup.html`** is linked from the PRD but lives at `_DOCS/mockup.html` (not the repo root; the earlier "missing" note was wrong).
 5. **Demo credentials are hardcoded** in `src/AuthScreen.jsx` and documented in [03_TECH_STACK.md](03_TECH_STACK.md) — demo only.
 6. **RLS is off** — the anon key can read/write every table, including incident stories.
 
@@ -83,3 +87,4 @@ After any task that changes app behavior, schema, or scope:
 - **2026-11-19** — Guest mode added: "Continue as guest" on `AuthScreen`, `sessionStorage` flag in `App.jsx`, guest incidents save with `user_id = null`. Verified the guest golden path in the browser (INSERT succeeded) and deleted the test row. Docs updated; uncommitted at the time of writing.
 - **2026-11-19** — Voice intake added via Google AI Studio (Gemini): `src/lib/stt.js`, `server/stt.js`, `api/stt.js`, dev middleware in `vite.config.js`, mic UI in `IntakeForm.jsx`, EN/BM voice strings. Endpoint verified through the dev server; mic capture needs a manual browser check. Docs updated; uncommitted at the time of writing.
 - **2026-11-19** — Voice UI rebuilt as a hold-to-talk dialog (`src/VoiceDialog.jsx`): press-and-hold mic with pulse/equalizer animation, release-to-transcribe, spinner, transcript appended directly to the form, Record again / Done, Escape/backdrop cancel. Verified end to end in-browser with a fake mic stream; docs updated; uncommitted at the time of writing.
+- **2026-11-19** — Merge of `origin/main` in progress (merge commit pending): landed the light/dark design system (`06_DESIGN.md`, `src/index.css` tokens), `ThemeToggle`, `Stepper`, `EmergencyBar` and `?demo=1` (`src/demoMode.js`) alongside guest mode, EN/BM i18n (`stepsDone`) and voice intake. Tailwind v4 kept by owner decision, coexisting with the design-system CSS (token bridge in `@theme`; design classes unlayered and win over utilities; old `.grid` renamed `.card-grid`). Resolved conflicts in `00_STRUCTURE.md` and `03_TECH_STACK.md`. Still uncommitted: teammate edits to `api/analyze.js` + `server/analyze.js` swapping Gemini for the Qoder Agent SDK (local `qodercli`, env-var stripping) — excluded from the merge commit.

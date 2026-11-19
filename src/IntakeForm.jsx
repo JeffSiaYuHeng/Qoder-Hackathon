@@ -35,17 +35,14 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
 
   return (
     <div>
-      <h1 className="mb-3 text-[34px] font-semibold leading-tight">{t('intakeTitle')}</h1>
-      <p className="mb-8 leading-relaxed text-muted">
-        {t('intakeSub', { names: institutions.map((i) => i.name).join(', ') })}
-      </p>
+      <h1>{t('intakeTitle')}</h1>
+      <p className="sub">{t('intakeSub', { names: institutions.map((i) => i.name).join(', ') })}</p>
 
       <form onSubmit={submit} className="intake">
-        <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+        <label>
           {t('summaryLabel')}
           <textarea
             rows={5}
-            className="field"
             value={form.victim_summary}
             onChange={set('victim_summary')}
             placeholder={t('summaryPlaceholder')}
@@ -54,27 +51,25 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
           />
         </label>
 
-        <div className="mb-4">
-          <button type="button" className="action-btn" onClick={() => setVoiceOpen(true)}>
-            {t('voiceSpeak')}
-          </button>
-        </div>
+        <button type="button" className="action-btn voice-trigger" onClick={() => setVoiceOpen(true)}>
+          {t('voiceSpeak')}
+        </button>
 
-        <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label>
             {t('amountLabel')}
-            <input type="number" className="field" min="0" step="0.01" value={form.amount} onChange={set('amount')} />
+            <input type="number" min="0" step="0.01" value={form.amount} onChange={set('amount')} />
           </label>
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+          <label>
             {t('whenLabel')}
-            <input type="datetime-local" className="field" value={form.occurred_at} onChange={set('occurred_at')} />
+            <input type="datetime-local" value={form.occurred_at} onChange={set('occurred_at')} />
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label>
             {t('methodLabel')}
-            <select className="field" value={form.contact_method} onChange={set('contact_method')}>
+            <select value={form.contact_method} onChange={set('contact_method')}>
               <option value="">{t('methodSelect')}</option>
               {METHODS.map((m) => (
                 <option key={m} value={m}>
@@ -83,32 +78,32 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
               ))}
             </select>
           </label>
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+          <label>
             {t('phoneLabel')}
-            <input type="tel" className="field" value={form.scammer_phone} onChange={set('scammer_phone')} />
+            <input type="tel" value={form.scammer_phone} onChange={set('scammer_phone')} />
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label>
             {t('accountLabel')}
-            <input className="field" value={form.scammer_account} onChange={set('scammer_account')} />
+            <input value={form.scammer_account} onChange={set('scammer_account')} />
           </label>
-          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
+          <label>
             {t('refLabel')}
-            <input className="field" value={form.transaction_ref} onChange={set('transaction_ref')} />
+            <input value={form.transaction_ref} onChange={set('transaction_ref')} />
           </label>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <button type="button" className="link" onClick={onBack}>
             {t('back')}
           </button>
-          <button className="btn-primary" disabled={saving}>
+          <button className="primary" disabled={saving}>
             {saving ? t('buildingPlan') : t('getPlan')}
           </button>
         </div>
-        {error && <p className="mt-2.5 text-xs text-red-300">{error}</p>}
+        {error && <p className="status error">{error}</p>}
       </form>
 
       {voiceOpen && <VoiceDialog onClose={() => setVoiceOpen(false)} onTranscript={addTranscript} />}

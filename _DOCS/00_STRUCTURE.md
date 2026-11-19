@@ -13,7 +13,8 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 | [04_PRD.md](04_PRD.md) | Requirements, screens, demo script |
 | [05_PRODUCT_PLAN.md](05_PRODUCT_PLAN.md) | Earlier 2-hour plan (background) |
 | [06_PROJECT_SNAPSHOT.md](06_PROJECT_SNAPSHOT.md) | Living status: what works, gaps, next steps, update log |
-| [Design.md](Design.md) | Visual/UX design doc — **placeholder**, to be replaced |
+| [06_DESIGN.md](06_DESIGN.md) | Design system: colour, type, components, light/dark theme, copy rules, demo setup |
+| [Design.md](Design.md) | Superseded by 06_DESIGN.md — earlier placeholder notes |
 
 `AGENTS.md` stays at the repo root, not here — agent tooling auto-loads it from there.
 
@@ -29,37 +30,53 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 │   ├── 04_PRD.md
 │   ├── 05_PRODUCT_PLAN.md
 │   ├── 06_PROJECT_SNAPSHOT.md
-│   └── Design.md             # placeholder UX/design doc
+│   ├── 06_DESIGN.md
+│   ├── Design.md             # superseded placeholder
+│   └── mockup.html           # static mockup linked from the PRD
+
 ├── AGENTS.md                 # hackathon rules for agents
 ├── api/
-│   └── stt.js                # Vercel function: speech-to-text
+│   ├── stt.js                # Vercel function: speech-to-text
+│   ├── analyze.js            # Vercel function: story → incident fields + plan
+│   ├── lookup.js             # Vercel function: per-institution contact lookup
+│   └── send.js               # Vercel function: one-click email (Resend)
 ├── server/
-│   └── stt.js                # Gemini transcription core (dev + prod)
+│   ├── stt.js                # Gemini transcription core (dev + prod)
+│   ├── analyze.js            # analysis core (HACK: uncommitted local Qoder-SDK variant)
+│   ├── lookup.js             # live page check, registry fallback
+│   ├── send.js               # email core; DEMO_MODE reroutes to the team inbox
+│   └── registry.js           # reads institutions server-side
 ├── db/
 │   ├── schema.sql            # tables (apply in Supabase SQL editor)
 │   └── seed.sql              # verified fallback institution contacts
 ├── index.html
 ├── package.json
-├── vite.config.js            # React + Tailwind plugins, dev /api/stt middleware
+├── vite.config.js            # React + Tailwind plugins, dev middleware for /api/stt, /analyze, /lookup, /send
 ├── .env.example
 ├── .env.local                # real Supabase + AI Studio keys, gitignored
 └── src/
-    ├── main.jsx              # React entry
+    ├── main.jsx              # React entry: LangContext provider, imports demoMode.js
     ├── App.jsx               # stage state machine + Supabase writes
     ├── AuthScreen.jsx        # email/password sign-in (demo account hardcoded)
     ├── InstitutionPicker.jsx # reads the institutions registry
     ├── IntakeForm.jsx        # incident intake form, opens the voice dialog
     ├── VoiceDialog.jsx       # hold-to-talk mic dialog, appends transcript to the form
     ├── ActionPlan.jsx        # checklist, call script, print report, mailto drafts
-    ├── index.css             # Tailwind v4 entry, theme tokens, print CSS
+    ├── ThemeToggle.jsx       # light/dark switch (top bar + sign-in screen)
+    ├── Stepper.jsx           # flow progress: Where it went → What happened → Action plan
+    ├── EmergencyBar.jsx      # Call 997 bar, before sign-in and on the first screen
+    ├── demoMode.js           # ?demo=1: Call/Email show an in-app message instead of leaving the browser
+    ├── index.css             # Tailwind import + @theme bridge, design tokens, components, voice dialog, print CSS
     └── lib/
         ├── supabase.js       # single Supabase client
         ├── i18n.js           # EN/BM dictionary, context hook, localStorage persistence
         ├── stt.js            # mic recording → 16 kHz WAV → /api/stt
+        ├── agent.js          # /api/analyze, /api/lookup, /api/send wrappers (unused so far)
+        ├── demo.js           # canned API responses for ?demo=1 (unused so far)
         └── plan.js           # rule-based plan builder (LLM stand-in)
 ```
 
-Planned but **not built yet** (see [04_PRD.md](04_PRD.md) §7): `api/analyze.js`, `api/lookup.js`, `api/send.js` as Vercel serverless functions.
+**Server handlers are built** (`api/analyze.js`, `api/lookup.js`, `api/send.js`, plus the `server/*.js` cores and `server/registry.js`). The client does not call them yet — the golden path still uses the client-side rule-based plan in `src/lib/plan.js`, and email is `mailto:` only. PRD intent: [04_PRD.md](04_PRD.md) §7. Note: `server/analyze.js` + `api/analyze.js` currently hold uncommitted teammate edits that use the Qoder Agent SDK instead of Gemini (local `qodercli` only).
 
 ## App flow
 
@@ -98,9 +115,13 @@ AuthScreen ──sign in──────────┐
 | Institution contacts (hotline, fraud page, email) | `db/seed.sql`, then re-run it in Supabase |
 | Table columns / constraints | `db/schema.sql`, then re-run it in Supabase |
 | Step order or email/call script wording | `src/lib/plan.js` |
-| Screens and copy | `src/*.jsx` |
+| Screens and copy | `src/*.jsx` (copy rules: [06_DESIGN.md](06_DESIGN.md) §9) |
+| Colours, fonts, spacing, light/dark values | Tokens at the top of `src/index.css` ([06_DESIGN.md](06_DESIGN.md) §3–5); Tailwind utilities follow them via the `@theme` bridge |
+| How a component looks | Design-system component classes in `src/index.css` ([06_DESIGN.md](06_DESIGN.md) §6) |
 | Sign-in / guest mode | `src/AuthScreen.jsx` + `session` / `guest` state in `src/App.jsx` |
 | Voice input (recording, resampling, transcription) | `src/lib/stt.js` (browser), `server/stt.js` (Gemini call), `api/stt.js` (Vercel) |
 | STT model or prompt | `server/stt.js` (`AI_STUDIO_MODEL` overrides the default model) |
 | Printed police report layout | `src/ActionPlan.jsx` + print CSS in `src/index.css` |
+| Light/dark default | `ThemeToggle.jsx` (`data-theme` on `<html>`); device preference otherwise |
+| Stage demo (`?demo=1`) | `src/demoMode.js` (intercepts `tel:`/`mailto:` clicks) |
 | Product scope | [04_PRD.md](04_PRD.md) |

@@ -7,10 +7,12 @@ Hackathon demo stack. One app, one process, boring tech — see [AGENTS.md](../A
 | Layer | Choice | Notes |
 | --- | --- | --- |
 | Frontend | React (plain JavaScript, no TypeScript) | Single-page app |
-| Styling | Tailwind CSS v4 via `@tailwindcss/vite` | Theme tokens in `src/index.css`; printable-report CSS kept hand-written |
+| Styling | Tailwind CSS v4 + design-token CSS | Tailwind for layout/utilities, a design-system stylesheet (light/dark tokens + component classes) for the look. See [06_DESIGN.md](06_DESIGN.md) |
 | Build tool | Vite | Instant dev server, zero config |
+| Fonts | Inter (body) + Plus Jakarta Sans (headings), Google Fonts | Falls back to the system font if blocked |
 | Database | Supabase (hosted Postgres) | Accessed via `@supabase/supabase-js` |
 | Hosting | Vercel | Already authenticated locally |
+| Email | Resend (optional) | `/api/send` only; without a key the UI falls back to `mailto:` drafts |
 
 Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-1` (Singapore).
 
@@ -21,9 +23,16 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 ```
 .
 ├── api/
-│   └── stt.js            # Vercel function: speech-to-text
+│   ├── stt.js            # Vercel function: speech-to-text
+│   ├── analyze.js        # Vercel function: story → structured incident + plan
+│   ├── lookup.js         # Vercel function: per-institution contact lookup
+│   └── send.js           # Vercel function: one-click email via Resend
 ├── server/
-│   └── stt.js            # shared Gemini transcription core (dev + prod)
+│   ├── stt.js            # Gemini transcription core (dev + prod)
+│   ├── analyze.js        # plan/field extraction core
+│   ├── lookup.js         # channel lookup core (live page check + registry fallback)
+│   ├── send.js           # email core (DEMO_MODE reroutes to the team inbox)
+│   └── registry.js       # server-side institutions read
 ├── db/
 │   ├── schema.sql        # tables (apply via Supabase SQL editor or Management API)
 │   └── seed.sql          # verified fallback contacts
@@ -34,13 +43,19 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 │   ├── AuthScreen.jsx    # email/password sign-in (demo account hardcoded)
 │   ├── InstitutionPicker.jsx
 │   ├── IntakeForm.jsx
-│   ├── VoiceDialog.jsx     # hold-to-talk mic dialog (pulse + bars animation)
+│   ├── VoiceDialog.jsx   # hold-to-talk mic dialog (pulse + bars animation)
 │   ├── ActionPlan.jsx    # checklist, script, print report, mailto drafts
-│   ├── index.css         # Tailwind entry, theme tokens, report + print CSS
+│   ├── ThemeToggle.jsx   # light/dark switch
+│   ├── Stepper.jsx       # flow progress
+│   ├── EmergencyBar.jsx  # Call 997 bar
+│   ├── demoMode.js       # ?demo=1 intercepts tel:/mailto: links
+│   ├── index.css         # design tokens + component styles (see 06_DESIGN.md)
 │   └── lib/
 │       ├── supabase.js   # single client export
 │       ├── i18n.js       # EN/BM dictionary + useI18n
 │       ├── stt.js        # mic recording → 16 kHz WAV → /api/stt
+│       ├── agent.js      # /api/analyze, /api/lookup, /api/send wrappers (not called by the UI yet)
+│       ├── demo.js       # canned API responses when ?demo=1 (not imported yet)
 │       └── plan.js       # rule-based plan builder
 ├── .env.local            # real keys, never committed
 ├── .env.example
@@ -57,10 +72,19 @@ VITE_SUPABASE_ANON_KEY=<legacy anon key>
 
 # server-only — not exposed to the browser
 AI_STUDIO_API=<Google AI Studio API key>
-AI_STUDIO_MODEL=gemini-3.8-flash   # optional; this is the default
+AI_STUDIO_MODEL=gemini-3.8-flash   # optional; this is the default (STT + analyze)
+LOOKUP_MODEL=                      # optional; lookup default is gemini-3.5-flash-lite
+
+# /api/send — optional. Without a key the UI falls back to mailto: drafts.
+RESEND_API_KEY=
+DEMO_MODE=true                     # sends ALL email to DEMO_INBOX, never real institutions
+DEMO_INBOX=<team inbox>
+SEND_FROM=ScamSOS <onboarding@resend.dev>
 ```
 
 Vite only exposes `VITE_*` vars to the browser. The anon/publishable key is public by design; never put the `service_role`/`sb_secret_*` key in the frontend. `AI_STUDIO_API` must stay server-side — do **not** prefix it with `VITE_`.
+
+HACK: teammate worktree only — `server/analyze.js` + `api/analyze.js` are uncommitted local edits that call the Qoder Agent SDK (needs `qodercli` signed in) instead of Gemini and strip Qoder Desktop's SDK env vars on import. Requires the `Qoder SDK/typescript` folder next to the repo; not part of the merge commit.
 
 ## Commands
 
@@ -102,25 +126,18 @@ vercel deploy        # preview deploy
 - Demo credential (created via admin API, email confirmed): **demo@scamsos.my / ScamSOS2026!**
 - HACK: the demo credential is hardcoded in `src/AuthScreen.jsx` so the on-stage login is one click.
 
-## Styling (Tailwind CSS)
+## Styling (Tailwind CSS v4 + design-token CSS)
+
+Two layers coexist in `src/index.css`; the design system is the source of truth for the look ([06_DESIGN.md](06_DESIGN.md)).
 
 - **Version**: Tailwind CSS v4 (`tailwindcss@4.3.5`) with the first-party `@tailwindcss/vite` plugin. Registered in `vite.config.js`; **no** `tailwind.config.js`, no PostCSS config — v4 needs neither.
-- **Entry**: `src/index.css` starts with `@import "tailwindcss";`.
-- **Theme tokens** (in `@theme`, used as normal utilities like `bg-canvas`, `text-muted`, `border-edge`):
-
-  | Token | Value | Use |
-  | --- | --- | --- |
-  | `canvas` | `#0b0f14` | page background |
-  | `panel` | `#141b24` | cards, inputs, panels |
-  | `edge` / `edge-strong` | `#232e39` / `#3a4a5a` | borders, hover borders |
-  | `ink` / `muted` / `dim` | `#e8edf2` / `#93a1b0` / `#6f7f8f` | text levels |
-  | `brand` / `brand-soft` | `#ff5a5f` / `#241518` | accent and selected-card tint |
-  | `btn` | `#1d2732` | secondary action pills |
-
-- **Component classes** (`@layer components`, reused across screens): `.field`, `.btn-primary`, `.link`, `.panel`, `.card`, `.card-selected`, `.action-btn`.
-- **Everything else is inline utilities** in the JSX; one-off hex values use arbitrary values (`text-[#ffb3b5]`, `bg-[#0f151c]`).
-- **Hand-written CSS is deliberate** for `.report`, `.report-*` and the `@media print` block. Screen elements that must not print carry `.no-print`. Do not convert the print report to utilities — keep it in `src/index.css` so `window.print()` stays predictable.
-- `html { color-scheme: dark }` keeps native inputs/selects dark; form controls rely on Tailwind Preflight for font inheritance.
+- **Entry**: `src/index.css` starts with `@import "tailwindcss";`, then a `@theme` **token bridge** that maps utility names to the design tokens (`--color-canvas: var(--bg)`, `--color-brand: var(--accent)`, …) so `bg-canvas`, `text-muted`, `border-edge` follow light/dark automatically.
+- **Design tokens** (plain custom properties on `:root`): light values by default, dark values under `@media (prefers-color-scheme: dark)` and `:root[data-theme='dark']`; `ThemeToggle.jsx` sets `data-theme`. Roles: `--bg`, `--surface`, `--surface-2`, `--line`, `--ink`, `--ink-2`, `--ink-3`, `--accent`, `--accent-soft`, `--ok*`, `--warn*`, plus `--fs-*`, `--s-*`, `--r-*`, `--tap`.
+- **Component classes** live **unlayered** (not in `@layer components`), so they beat Tailwind utilities: `.card-grid`, `.card`, `.panel`, `.step`, `.action-btn`, `.primary`, `.link`, `.topbar`, `.intake`, voice-dialog and report styles. Reuse these names; new screens match for free.
+- **Tailwind utilities** are used for layout and spacing inside the JSX.
+- `.grid` was renamed **`.card-grid`** so it does not collide with Tailwind's `.grid` utility.
+- **Hand-written CSS is deliberate** for `.report`, `.report-*` and the `@media print` block (which forces a light `color-scheme`). Screen elements that must not print carry `.no-print`. Do not convert the print report to utilities — keep it in `src/index.css` so `window.print()` stays predictable.
+- `@media (prefers-reduced-motion: reduce)` disables transitions/animations.
 
 ## Data model
 

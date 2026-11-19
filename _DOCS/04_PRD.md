@@ -8,6 +8,7 @@
 | **Stack** | React (JS) + Vite · Supabase · Vercel. See [03_TECH_STACK.md](03_TECH_STACK.md) |
 | **Mockup** | [mockup.html](mockup.html) (the source of truth for screens and copy) |
 | **Background** | [05_PRODUCT_PLAN.md](05_PRODUCT_PLAN.md) |
+| **Design** | [06_DESIGN.md](06_DESIGN.md) (colours, type, components, light/dark theme, copy rules) |
 | **Market** | Malaysia first (NSRC 997, PDRM, Malaysian banks, e-wallets and platforms) |
 
 ---
@@ -63,6 +64,8 @@ Home ──► What happened (voice / text) ──► AI analysis + pick institu
 ```
 
 Screens map 1:1 to [mockup.html](mockup.html). A 60-minute "golden hour" countdown runs from the moment the user starts.
+
+> **Copy note:** official guidance is to call NSRC 997 **within 24 hours**, and the government's own "golden hour" means the first 24 hours, not 60 minutes. A countdown is fine as urgency, but don't label it as an official recovery window. See [06_DESIGN.md](06_DESIGN.md) §9.
 
 ---
 
@@ -254,8 +257,9 @@ Seed for the demo: Maybank, CIMB, Public Bank, TNG eWallet, Shopee, Grab. **Ever
 | **Demo mode** | `DEMO_MODE=true` sends **all** emails to the team inbox, with the intended recipient written in the subject. **We never email real banks during the hackathon.** |
 | **Speed** | Analyze < 4 s; lookup < 8 s (then fallback); send < 10 s. |
 | **Resilience** | Every live step has an offline fallback: canned transcript, canned incident JSON, registry lookup, `mailto:`. A hidden `?demo=1` switch forces all fallbacks. |
-| **Mobile** | Phone-first layout; buttons at least 44 px; works in Chrome on Android and iOS Safari (voice works in Chrome first). |
-| **Accessibility** | Large type, high contrast; actions never shown by colour alone. |
+| **Mobile** | Phone-first layout; buttons at least 44 px; works in Chrome on Android and iOS Safari (voice works in Chrome first). **Done:** every tap target ≥ 44 px, text ≥ 16 px, tested at 390 px ([06_DESIGN.md](06_DESIGN.md)). |
+| **Accessibility** | Large type, high contrast; actions never shown by colour alone. **Done:** all text passes WCAG AA 4.5:1 in both themes; done/warning/selected states use a tick or "!" as well as colour. |
+| **Theme** | Light and dark. Follows the device setting; a toggle overrides it and is remembered. Print is always light. |
 
 ---
 
@@ -298,6 +302,8 @@ If behind at 1:20: cut live lookup to registry-only with a fake log (F5 fallback
 | Speech-to-text mishears Malaysian English | The text box is editable; canned transcript fallback |
 | The LLM invents a phone number or URL | Numbers only come from the registry; domain allow-list; prompt forbids guessing |
 | Emails go to spam / sender domain not verified | Set up the email service's verified sender domain early; demo inbox is ours |
+| Call / Email buttons open FaceTime / Mail.app on the demo laptop (phone simulated in the browser) | `?demo=1` shows in-app "Calling…" / "Draft ready" instead; until it exists, tick the step instead of tapping ([06_DESIGN.md](06_DESIGN.md) §11) |
+| An unsupported "first hour" claim on screen or in the pitch | Use the official 24-hour guidance and the minister's "first one to two hours are crucial" ([06_DESIGN.md](06_DESIGN.md) §9) |
 | Judges ask "do you actually email banks?" | "Not in the demo. In production it needs each bank's agreement on which address and format to use, and that's our B2B model." |
 
 ## 14. Open questions

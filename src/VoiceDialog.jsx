@@ -106,22 +106,22 @@ export default function VoiceDialog({ onClose, onTranscript }) {
   const recording = phase === 'recording'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+    <div className="voice-overlay" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label={t('voiceTitle')}
-        className="w-full max-w-[420px] rounded-2xl border border-edge bg-panel p-6"
+        className="voice-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{t('voiceTitle')}</h2>
+        <div className="voice-head">
+          <h2>{t('voiceTitle')}</h2>
           <button type="button" className="link" onClick={onClose}>
             {t('voiceClose')}
           </button>
         </div>
 
-        <div className="flex flex-col items-center py-6">
+        <div className="voice-body">
           <button
             type="button"
             className={`voice-mic ${recording ? 'voice-mic-live' : ''}`}
@@ -146,27 +146,27 @@ export default function VoiceDialog({ onClose, onTranscript }) {
             </div>
           )}
 
-          <p className={`mt-4 text-sm ${recording ? 'text-brand' : 'text-muted'}`}>
+          <p className={`voice-status ${recording ? 'live' : ''}`}>
             {phase === 'transcribing' ? t('voiceTranscribing') : recording ? t('voiceRelease') : t('voiceHold')}
           </p>
-          <p className="mt-2 text-center text-xs text-dim">{t('voiceHint')}</p>
+          <p className="voice-hint">{t('voiceHint')}</p>
         </div>
 
         {phase === 'done' && (
-          <div className="mb-4 rounded-[10px] border border-edge bg-canvas p-3">
-            <p className="mb-1 text-xs font-semibold text-brand">{t('voiceAdded')}</p>
-            <p className="max-h-32 overflow-y-auto text-sm leading-relaxed text-ink">{lastText}</p>
+          <div className="voice-result">
+            <p className="voice-result-title">{t('voiceAdded')}</p>
+            <p className="voice-result-text">{lastText}</p>
           </div>
         )}
 
-        {error && <p className="mb-4 text-xs text-red-300">{t('voiceError', { msg: error })}</p>}
+        {error && <p className="status error">{t('voiceError', { msg: error })}</p>}
 
         {phase === 'done' && (
-          <div className="flex justify-end gap-3">
+          <div className="voice-actions">
             <button type="button" className="action-btn" onClick={() => go('idle')}>
               {t('voiceAgain')}
             </button>
-            <button type="button" className="btn-primary" onClick={onClose}>
+            <button type="button" className="primary" onClick={onClose}>
               {t('voiceDone')}
             </button>
           </div>

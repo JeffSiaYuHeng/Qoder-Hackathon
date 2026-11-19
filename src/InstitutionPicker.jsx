@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 import { useI18n } from './lib/i18n'
 
+// Short names Malaysians already use, shown in a round badge like a banking app's bank list.
+const BADGE = {
+  maybank: 'MBB',
+  cimb: 'CIMB',
+  'public-bank': 'PBB',
+  rhb: 'RHB',
+  'hong-leong': 'HLB',
+  'tng-ewallet': 'TNG',
+  shopee: 'SPE',
+}
+
 const GROUPS = [
   ['bank', 'banks'],
   ['ewallet', 'ewallets'],
@@ -33,28 +44,31 @@ export default function InstitutionPicker({ onContinue }) {
 
   return (
     <div>
-      <h1 className="mb-3 text-[34px] font-semibold leading-tight">{t('pickTitle')}</h1>
-      <p className="mb-8 leading-relaxed text-muted">{t('pickSub')}</p>
+      <h1>{t('pickTitle')}</h1>
+      <p className="sub">{t('pickSub')}</p>
 
-      {loading && <p className="mt-2.5 text-xs text-dim">{t('loadingRegistry')}</p>}
-      {error && <p className="mt-2.5 text-xs text-red-300">{t('registryError', { msg: error })}</p>}
+      {loading && <p className="status">{t('loadingRegistry')}</p>}
+      {error && <p className="status error">{t('registryError', { msg: error })}</p>}
 
       {GROUPS.map(([type, labelKey]) => {
         const items = institutions.filter((i) => i.type === type)
         if (!items.length) return null
         return (
           <section key={type}>
-            <h2 className="mb-2.5 mt-7 text-xs uppercase tracking-[0.1em] text-dim">{t(labelKey)}</h2>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2.5">
+            <h2>{t(labelKey)}</h2>
+            <div className="card-grid">
               {items.map((i) => (
                 <button
                   key={i.id}
-                  className={`card ${selected.includes(i.id) ? 'card-selected' : ''}`}
+                  className={selected.includes(i.id) ? 'card selected' : 'card'}
                   onClick={() => toggle(i.id)}
                   aria-pressed={selected.includes(i.id)}
                 >
-                  <span className="font-semibold">{i.name}</span>
-                  {i.hotline && <span className="text-xs text-muted">{i.hotline}</span>}
+                  <span className="card-avatar" aria-hidden="true">
+                    {BADGE[i.slug] || i.name.slice(0, 1)}
+                  </span>
+                  <span className="card-name">{i.name}</span>
+                  {i.hotline && <span className="card-meta">{i.hotline}</span>}
                 </button>
               ))}
             </div>
@@ -62,8 +76,8 @@ export default function InstitutionPicker({ onContinue }) {
         )
       })}
 
-      <footer className="mt-9 border-t border-edge pt-4 text-[#c9d3dd]">
-        <div className="mt-4 flex items-center justify-between gap-3">
+      <footer>
+        <div className="footer-row">
           <span>
             <strong>{t('selected')}</strong>{' '}
             {institutions
@@ -72,7 +86,7 @@ export default function InstitutionPicker({ onContinue }) {
               .join(', ') || t('noneYet')}
           </span>
           <button
-            className="btn-primary"
+            className="primary"
             disabled={!selected.length}
             onClick={() => onContinue(institutions.filter((i) => selected.includes(i.id)))}
           >
@@ -80,9 +94,7 @@ export default function InstitutionPicker({ onContinue }) {
           </button>
         </div>
         {!loading && !error && (
-          <p className="mt-2.5 text-xs text-dim">
-            {t('registryLoaded', { count: institutions.length })}
-          </p>
+          <p className="status">{t('registryLoaded', { count: institutions.length })}</p>
         )}
       </footer>
     </div>
