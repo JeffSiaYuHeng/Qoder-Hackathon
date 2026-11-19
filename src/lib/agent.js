@@ -24,13 +24,14 @@ export async function lookupInstitutions(institutions) {
   return json
 }
 
-export async function sendAllReports(userEmail, reports) {
+export async function sendAllReports(userEmail, reports, pdf) {
   const res = await fetch('/api/send', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       user_email: userEmail,
       reports: reports.map((r) => ({ institution_id: r.slug, subject: r.subject, body: r.body })),
+      ...(pdf ? { pdf_base64: pdf.pdfBase64, pdf_filename: pdf.pdfFilename } : {}),
     }),
   })
   const json = await res.json().catch(() => ({}))

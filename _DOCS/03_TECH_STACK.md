@@ -24,12 +24,14 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 .
 ├── api/
 │   ├── stt.js            # Vercel function: speech-to-text
-│   ├── analyze.js        # Vercel function: story → structured incident + plan
+│   ├── analyze.js        # Vercel function: story → structured fields + detected institutions
+│   ├── report.js         # Vercel function: AI-rewritten report drafts
 │   ├── lookup.js         # Vercel function: per-institution contact lookup
-│   └── send.js           # Vercel function: one-click email via Resend
+│   └── send.js           # Vercel function: one-click email via Resend (PDF attached)
 ├── server/
 │   ├── stt.js            # Gemini transcription core (dev + prod)
-│   ├── analyze.js        # plan/field extraction core
+│   ├── analyze.js        # Gemini field extraction core
+│   ├── report.js         # Gemini report rewrite + validation, template fallback
 │   ├── lookup.js         # channel lookup core (live page check + registry fallback)
 │   ├── send.js           # email core (DEMO_MODE reroutes to the team inbox)
 │   └── registry.js       # server-side institutions read
@@ -39,8 +41,7 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 ├── index.html
 ├── src/
 │   ├── main.jsx          # React entry + LangContext provider
-│   ├── App.jsx           # stage state machine + Supabase reads/writes
-│   ├── AuthScreen.jsx    # email/password sign-in (demo account hardcoded)
+│   ├── App.jsx           # stage state machine + in-memory incident
 │   ├── InstitutionPicker.jsx
 │   ├── IntakeForm.jsx
 │   ├── VoiceDialog.jsx   # hold-to-talk mic dialog (pulse + bars animation)
@@ -54,9 +55,11 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 │       ├── supabase.js   # single client export
 │       ├── i18n.js       # EN/BM dictionary + useI18n
 │       ├── stt.js        # mic recording → 16 kHz WAV → /api/stt
-│       ├── agent.js      # /api/analyze, /api/lookup, /api/send wrappers (not called by the UI yet)
-│       ├── demo.js       # canned API responses when ?demo=1 (not imported yet)
-│       └── plan.js       # rule-based plan builder
+│       ├── agent.js      # /api/analyze, /api/lookup, /api/send wrappers
+│       ├── report.js     # /api/report wrapper (AI report rewrite)
+│       ├── pdf.js        # pdf-lib incident PDF (lazy-loaded)
+│       ├── demo.js       # canned API responses when ?demo
+│       └── plan.js       # rule-based steps + template reports
 ├── .env.local            # real keys, never committed
 ├── .env.example
 └── _DOCS/                # docs — see 00_STRUCTURE.md
@@ -72,7 +75,7 @@ VITE_SUPABASE_ANON_KEY=<legacy anon key>
 
 # server-only — not exposed to the browser
 AI_STUDIO_API=<Google AI Studio API key>
-AI_STUDIO_MODEL=gemini-3.8-flash   # optional; this is the default (STT + analyze)
+AI_STUDIO_MODEL=gemini-3.8-flash   # optional; this is the default (STT, analyze, report)
 LOOKUP_MODEL=                      # optional; lookup default is gemini-3.5-flash-lite
 
 # /api/send — optional. Without a key the UI falls back to mailto: drafts.
@@ -84,7 +87,7 @@ SEND_FROM=ScamSOS <onboarding@resend.dev>
 
 Vite only exposes `VITE_*` vars to the browser. The anon/publishable key is public by design; never put the `service_role`/`sb_secret_*` key in the frontend. `AI_STUDIO_API` must stay server-side — do **not** prefix it with `VITE_`.
 
-HACK: teammate worktree only — `server/analyze.js` + `api/analyze.js` are uncommitted local edits that call the Qoder Agent SDK (needs `qodercli` signed in) instead of Gemini and strip Qoder Desktop's SDK env vars on import. Requires the `Qoder SDK/typescript` folder next to the repo; not part of the merge commit.
+HACK: the Qoder Agent SDK experiment lives in the gitignored `Qoder SDK/` folder and is not part of the app. Everything that ships — analyze, report, lookup, STT — runs on Gemini via `AI_STUDIO_API`.
 
 ## Commands
 
@@ -97,17 +100,17 @@ vercel deploy        # preview deploy
 
 ## User flow
 
-1. **Sign in or continue as guest** — Supabase Auth email/password, "Use demo account" for one click, or "Continue as guest" to file without an account. Guest state persists in `sessionStorage` (`scamsos.guest`).
-2. **Pick institutions** — banks / e-wallets / platforms (multi-select, loaded from `institutions`).
-3. **Intake** — type the story or record it; the voice button transcribes through `/api/stt` (Google AI Studio). Plus amount, time, contact method, suspect details.
-4. **Action plan** — rule-based builder (`src/lib/plan.js`) writes `incidents`, `incident_institutions` and `action_steps`; the screen renders `tel:` / web / map buttons, a call script, email drafts and a printable police report.
-5. Step checkboxes persist `action_steps.done`.
+1. **Tell the story** — the app opens straight into intake. No account, no sign-in. The story goes to `/api/analyze`, which prefills the form and flags detected institutions.
+2. **Confirm institutions** — banks / e-wallets / platforms (multi-select, loaded from `institutions`, detected ones pre-selected).
+3. **Intake details** — amount, time, contact method, suspect details; the voice button transcribes through `/api/stt`.
+4. **Action plan** — `src/lib/plan.js` builds steps, a call script and template reports in memory; `/api/report` rewrites the report wording with Gemini. The screen renders `tel:` / web / map buttons, lookup, per-institution reports, PDF download and a printable police report.
+5. Step checkboxes and the incident itself live in React state only — a reload clears them.
 
 ## Language (i18n)
 
 - Hand-rolled EN/BM dictionary in `src/lib/i18n.js` — no dependency.
 - `LangContext` + `useI18n()` expose `lang`, `setLang`, `t`; choice persists in `localStorage` (`scamsos.lang`).
-- The toggle is in the topbar (auth screen included). Dates use `en-MY` / `ms-MY`.
+- The toggle is in the topbar. Dates use `en-MY` / `ms-MY`.
 - Plan generation is localized at build time: step titles, call script and `mailto:` drafts are generated in the active language and stored that way.
 
 ## Speech-to-text (Google AI Studio)
@@ -121,10 +124,15 @@ vercel deploy        # preview deploy
 
 ## Auth
 
-- Supabase Auth email/password; `incidents.user_id` references `auth.users` (nullable).
-- **Guest mode** — "Continue as guest" on the auth screen starts the same flow with no session and no profile; incidents save with `user_id = null`. The flag lives in `sessionStorage` and is cleared on sign-in. The topbar shows a `Guest` badge and a "Sign in" link back to the auth screen.
-- Demo credential (created via admin API, email confirmed): **demo@scamsos.my / ScamSOS2026!**
-- HACK: the demo credential is hardcoded in `src/AuthScreen.jsx` so the on-stage login is one click.
+None. The app is guest-only: no sign-in screen, no Supabase session, no profile, no `user_id`. `src/lib/supabase.js` is used only to read the public `institutions` registry. Incidents live in React state and are never written to the database.
+
+## Report drafting (Gemini)
+
+- `src/lib/report.js` posts the browser-built template reports to `/api/report` right after the plan renders.
+- `server/report.js` asks Gemini (`gemini-3.8-flash`) for a cleaned statement and one rewritten body per institution (JSON response schema), then validates each body: known slug, institution name present, supplied suspect fields verbatim, amount unchanged, disclaimer kept.
+- Missing key, a 20 s timeout, or any invalid body falls back to the templates (`source: "template"`), so the plan screen is usable immediately and never waits on the model.
+- The AI statement replaces the victim's raw words in the printed police report when validation passes.
+- The same path runs on Vercel because it uses the existing `AI_STUDIO_API` key — there is no local-only dependency.
 
 ## Styling (Tailwind CSS v4 + design-token CSS)
 

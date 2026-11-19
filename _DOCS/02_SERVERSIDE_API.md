@@ -1,6 +1,6 @@
 # 02 — Server-Side API
 
-The browser talks straight to Supabase (PostgREST + Auth) with the public anon key. One custom endpoint exists — `POST /api/stt` (Vercel function, mirrored in the Vite dev server). The remaining planned `/api` functions in [04_PRD.md](04_PRD.md) are not built yet.
+The browser reads the public `institutions` registry from Supabase (anon key) and calls five Vercel functions: `/api/stt`, `/api/analyze`, `/api/report`, `/api/lookup`, `/api/send`. All are mirrored in the Vite dev server. There is no auth and no incident write.
 
 ## Configuration
 
@@ -17,55 +17,41 @@ export const supabase = createClient(
 | --- | --- | --- |
 | `VITE_SUPABASE_URL` | browser bundle | Supabase REST/Auth base URL |
 | `VITE_SUPABASE_ANON_KEY` | browser bundle | Public anon key (RLS still applies in production) |
-| `AI_STUDIO_API` | server only | Google AI Studio key for `/api/stt` — never `VITE_*` |
+| `AI_STUDIO_API` | server only | Google AI Studio key for `/api/stt`, `/api/analyze`, `/api/report`, `/api/lookup` — never `VITE_*` |
 | `AI_STUDIO_MODEL` | server only | Optional model override; defaults to `gemini-3.8-flash` |
+| `RESEND_API_KEY` | server only | `/api/send` email delivery |
+| `SEND_FROM` | server only | Optional sender; defaults to `ScamSOS <onboarding@resend.dev>` |
+| `DEMO_MODE` | server only | `true` redirects every email to `DEMO_INBOX` |
+| `DEMO_INBOX` | server only | Where demo emails land |
 
 Vite inlines `VITE_*` into the client bundle — treat them as public. Never put the `service_role` / `sb_secret_*` key in a `VITE_*` var or anywhere in `src/`.
 
-`AI_STUDIO_API` / `AI_STUDIO_MODEL` are used by `/api/stt`. Still planned but unused: `ANTHROPIC_API_KEY` (or other LLM), `RESEND_API_KEY` (or other email service), `DEMO_MODE`, `DEMO_INBOX`.
+## Auth
 
-## Auth (Supabase Auth)
-
-| Call | Where | Notes |
-| --- | --- | --- |
-| `supabase.auth.getSession()` | `src/App.jsx` | Restores the session on load |
-| `supabase.auth.onAuthStateChange(cb)` | `src/App.jsx` | Keeps `session` in sync; unsubscribed on unmount |
-| `supabase.auth.signInWithPassword({ email, password })` | `src/AuthScreen.jsx` | Email/password sign-in |
-| `supabase.auth.signOut()` | `src/App.jsx` | Topbar "Sign out" |
-
-`src/AuthScreen.jsx` has a hardcoded demo account behind a "Use demo account" button (marked `HACK`). Do not reuse that pattern outside the demo.
-
-There is no sign-up flow and no password reset. Users must already exist in Supabase Auth.
-
-**Guest mode** bypasses auth entirely. `App.jsx` keeps a `guest` flag in `sessionStorage` (`scamsos.guest`), and guest incidents insert with `user_id: null`. With RLS off, the anon key can write without a session, so guest filing works with no account or profile. Signing in clears the guest flag.
+None. The app is guest-only: no sign-in screen, no Supabase session, no `user_id`, and no auth calls. `src/lib/supabase.js` is used only to read the public `institutions` registry.
 
 ## Data calls (PostgREST via supabase-js)
 
 | Operation | Where | Equivalent |
 | --- | --- | --- |
 | Load registry | `src/InstitutionPicker.jsx` | `select * from institutions order by name` |
-| Create incident | `src/App.jsx` `submitIntake()` | `insert into incidents (...) returning *` |
-| Link institutions | `src/App.jsx` `submitIntake()` | `insert into incident_institutions (...)` for each selected |
-| Save steps | `src/App.jsx` `submitIntake()` | `insert into action_steps (...) returning *` |
-| Tick a step | `src/App.jsx` `toggleStep()` | `update action_steps set done = $1 where id = $2` |
 
-Payloads match the columns in [01_DATA_SCHEMA.md](01_DATA_SCHEMA.md), including `user_id` (FK to `auth.users`, or `null` in guest mode).
-
-Errors are caught per call and surfaced in the screen's `error` state (`insertError.message`, `links.error`, etc.). There is no retry and no transaction: if the incident insert succeeds but the links/steps insert fails, you are left with a partial incident.
+There are no incident writes. An incident is a React-state object (`crypto.randomUUID()` id, `created_at`, form fields, `steps`, `call_script`, `reports`, optional `statement`) that disappears on reload. The `incidents`, `incident_institutions`, and `action_steps` tables remain in the schema but are unused.
 
 ## Client-side plan builder (not an API)
 
-`src/lib/plan.js` → `buildActionPlan(form, institutions)` is a **pure function** that runs in the browser. It returns:
+`src/lib/plan.js` → `buildActionPlan(form, institutions, t, locale)` is a **pure function** that runs in the browser. It returns:
 
 ```js
 {
   steps:       [{ title, action, value, urgency }], // ordered
   call_script: string,
+  reports:     [{ slug, name, type, to, subject, body, mailto }], // one per institution
   summary:     { amount, when, institutions, step_count },
 }
 ```
 
-It is a rule-based stand-in for the LLM intake (`HACK` comment) and keeps the same output shape as [05_PRODUCT_PLAN.md](05_PRODUCT_PLAN.md) §5 so it can be swapped for a model call later.
+The steps, call script and report templates are deterministic. The reports are then sent to `/api/report` for an AI rewrite; the rendered plan uses the templates until (and unless) the AI version arrives.
 
 ## Speech-to-text — `POST /api/stt` (implemented)
 
@@ -154,26 +140,28 @@ Animation CSS lives in `src/index.css` (`.voice-mic`, `.voice-mic-live`, `.voice
 
 No retry and no queue: one tap = one recording = one request. `fetchImpl` is injectable in `transcribeAudio()` for tests.
 
-## Planned serverless endpoints (not implemented)
+## Serverless endpoints (implemented)
 
-From [04_PRD.md](04_PRD.md) §7–§8. Vercel runs `api/*.js` next to the Vite build; no extra config. Keys stay server-side.
+Vercel runs `api/*.js` next to the Vite build; no extra config. Keys stay server-side. All four handlers are also mounted by `vite.config.js` for `npm run dev`.
 
 | Endpoint | Request | Response |
 | --- | --- | --- |
-| `POST /api/analyze` | `{ story, quick_fields }` | `{ incident, call_script }` |
-| `POST /api/lookup` | `{ institution_ids }` | streamed log lines, then `[{ id, fraud_page_url, source, rejected_domains }]` |
-| `POST /api/send` | `{ user_email, reports: [{ institution_id, subject, body }] }` | `[{ institution_id, status: "sent" \| "failed" }]` |
+| `POST /api/analyze` | `{ story }` | `{ scam_type, fields, detected, missing }` |
+| `POST /api/report` | `{ story, lang, form, institutions, templates }` | `{ source: "ai" \| "template", statement, reports }` |
+| `POST /api/lookup` | `{ institution_ids }` | `{ log, results }` |
+| `POST /api/send` | `{ user_email, reports, pdf_base64?, pdf_filename? }` | `[{ institution_id, status, to?, error? }]` |
 
-Rules the PRD imposes on these:
+Rules:
 
-- `/api/send` resolves the recipient address from the registry **server-side**; never trust an address from the browser.
-- `/api/lookup` accepts a URL only if its domain is in the institution's official allow-list; phone numbers and emails always come from the registry.
-- `/api/lookup` times out at 8 s and falls back to registry data.
-- `DEMO_MODE=true` redirects all email to the team inbox.
+- `/api/report` uses the same Gemini key/model as analyze (`AI_STUDIO_API`, default `gemini-3.8-flash`). It validates every rewritten body (slug, institution name, provided suspect fields, amount). Missing key, timeout (20 s), or invalid output returns the templates unchanged with `source: "template"` — the UI never blocks on it.
+- `/api/analyze` extracts only stated facts and chooses detected institutions from the registry; nulls stay null.
+- `/api/send` resolves the recipient address and attachment rules from the registry **server-side**; never trust an address from the browser. The optional PDF is validated (base64, ≤ 4 MB, `.pdf` filename) before any send.
+- `/api/lookup` accepts a URL only if its domain is in the institution's official allow-list; phone numbers and emails always come from the registry. It times out at 8 s and falls back to registry data.
+- `DEMO_MODE=true` redirects all email to the team inbox with a `[DEMO for …]` subject prefix.
 
 ## Security notes
 
-- With RLS off, anyone holding the anon key (it ships in the bundle) can read and write all tables, including incident stories. Do not leave this on for anything real.
-- The AI Studio key stays in the function / Vite middleware; it is not in the client bundle.
+- With RLS off, anyone holding the anon key (it ships in the bundle) can read and write all tables. The app now only reads the `institutions` registry and writes nothing, but the key still allows writes — do not leave this on for anything real.
+- The AI Studio and Resend keys stay in the function / Vite middleware; they are not in the client bundle.
 - No Supabase Edge Functions, no database RPCs, no custom CORS config in the repo.
 - Server-side secrets today: `AI_STUDIO_API` (and optional `AI_STUDIO_MODEL`), read only inside `/api/stt`. Everything else is public client code.

@@ -28,6 +28,8 @@ export default async function handler(req, res) {
       demoMode: process.env.DEMO_MODE === 'true',
       demoInbox: process.env.DEMO_INBOX,
       from: process.env.SEND_FROM,
+      pdfBase64: body?.pdf_base64,
+      pdfFilename: body?.pdf_filename,
     })
     res.status(200).json(results)
   } catch (err) {

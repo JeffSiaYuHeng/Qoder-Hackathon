@@ -9,11 +9,12 @@ const HINT_KEYS = [
   ['transaction_ref', 'hint.ref'],
 ]
 
-export default function ActionPlan({ incident, institutions, onToggle, onReset }) {
+export default function ActionPlan({ incident, institutions, onToggle, onReset, reportsBusy }) {
   const { lang, t } = useI18n()
   const locale = localeFor(lang)
   const [lookup, setLookup] = useState({ busy: false, log: [], results: null, error: null })
-  const [send, setSend] = useState({ busy: false, email: '', statuses: {}, error: null })
+  const [send, setSend] = useState({ busy: false, email: '', statuses: {}, error: null, note: null })
+  const [pdf, setPdf] = useState({ busy: false, error: null })
   const steps = incident.steps
   const missing = HINT_KEYS.filter(([field]) => !incident[field]).map(([, key]) => t(key))
   const reports = incident.reports || []
@@ -35,10 +36,43 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
     }
   }
 
-  async function sendAll() {
-    setSend((s) => ({ ...s, busy: true, error: null }))
+  // Lazy import keeps pdf-lib out of the initial bundle.
+  async function makePdf() {
+    const { buildIncidentPdf, pdfBase64 } = await import('./lib/pdf.js')
+    const bytes = await buildIncidentPdf(incident, institutions, t, locale)
+    return { bytes, base64: pdfBase64(bytes), filename: `scamsos-report-${incident.id.slice(0, 8).toUpperCase()}.pdf` }
+  }
+
+  async function downloadPdf() {
+    setPdf({ busy: true, error: null })
     try {
-      const results = await sendAllReports(send.email, reports)
+      const { bytes, filename } = await makePdf()
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      setPdf({ busy: false, error: null })
+    } catch (err) {
+      setPdf({ busy: false, error: err.message })
+    }
+  }
+
+  async function sendAll() {
+    setSend((s) => ({ ...s, busy: true, error: null, note: null }))
+    // A failed PDF must not block the emails — fall back to text-only.
+    let attachment
+    try {
+      const { base64, filename } = await makePdf()
+      attachment = { pdfBase64: base64, pdfFilename: filename }
+    } catch (err) {
+      setSend((s) => ({ ...s, note: err.message }))
+    }
+    try {
+      const results = await sendAllReports(send.email, reports, attachment)
       setSend((s) => ({
         ...s,
         busy: false,
@@ -148,6 +182,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
       <section className="panel no-print">
         <h2>{t('reportsTitle')}</h2>
         <p className="sub">{t('reportsSub')}</p>
+        {reportsBusy && <p className="status">{t('reportsDrafting')}</p>}
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -170,6 +205,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
           </div>
         </form>
         {send.error && <p className="status error">{t('sendUnavailable')}</p>}
+        {send.note && <p className="status error">{t('pdfAttachFailed', { msg: send.note })}</p>}
         {reports.map((r) => {
           const status = send.statuses[r.slug]
           return (
@@ -196,10 +232,14 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
         <button className="primary" onClick={() => window.print()}>
           {t('printReport')}
         </button>
+        <button className="action-btn" onClick={downloadPdf} disabled={pdf.busy}>
+          {pdf.busy ? t('pdfBuilding') : t('downloadPdf')}
+        </button>
         <button className="link" onClick={onReset}>
           {t('newIncident')}
         </button>
       </div>
+      {pdf.error && <p className="status error no-print">{t('pdfFailed', { msg: pdf.error })}</p>}
 
       <section className="report">
         <h2>{t('report.title')}</h2>
@@ -242,7 +282,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
           </tbody>
         </table>
         <h3>{t('report.statement')}</h3>
-        <p className="report-statement">{incident.victim_summary}</p>
+        <p className="report-statement">{incident.statement || incident.victim_summary}</p>
         <p className="report-note">
           {t('report.note', { done: steps.filter((s) => s.done).length, total: steps.length })}
         </p>

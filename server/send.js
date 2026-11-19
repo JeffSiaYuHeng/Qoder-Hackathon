@@ -1,5 +1,21 @@
 const TIMEOUT_MS = 10000
 const DEFAULT_FROM = 'ScamSOS <onboarding@resend.dev>'
+const MAX_ATTACHMENT_BYTES = 4 * 1024 * 1024
+
+// Reject a malformed attachment before any email goes out.
+function validatePdf(pdfBase64, pdfFilename) {
+  if (typeof pdfBase64 !== 'string' || !pdfBase64) throw new Error('pdf_base64 must be a non-empty string')
+  if (typeof pdfFilename !== 'string' || !pdfFilename.toLowerCase().endsWith('.pdf')) {
+    throw new Error('pdf_filename must end with .pdf')
+  }
+  const filename = pdfFilename.replace(/[^a-zA-Z0-9-_.]/g, '_')
+  if (!/^[a-zA-Z0-9-_.]+\.pdf$/.test(filename)) throw new Error('pdf_filename is not a valid file name')
+  const data = pdfBase64.replace(/^data:application\/pdf;base64,/, '')
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(data)) throw new Error('pdf_base64 is not valid base64')
+  const bytes = Buffer.from(data, 'base64')
+  if (bytes.length > MAX_ATTACHMENT_BYTES) throw new Error('PDF is larger than 4 MB')
+  return { filename, content: data }
+}
 
 // Sends one email per report via Resend. `To` always comes from the server-side
 // registry, never from the browser. DEMO_MODE redirects everything to the team inbox.
@@ -12,6 +28,8 @@ export async function sendReports({
   demoInbox,
   from,
   fetchImpl = fetch,
+  pdfBase64,
+  pdfFilename,
 }) {
   if (!apiKey) throw new Error('RESEND_API_KEY is not set — use the mailto drafts instead')
   if (typeof userEmail !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
@@ -19,6 +37,7 @@ export async function sendReports({
   }
   if (!Array.isArray(reports) || !reports.length) throw new Error('reports are required')
   if (demoMode && !demoInbox) throw new Error('DEMO_INBOX is not set')
+  const attachments = pdfBase64 || pdfFilename ? [validatePdf(pdfBase64, pdfFilename)] : null
 
   const bySlug = new Map(institutions.map((i) => [i.slug, i]))
   const results = []
@@ -52,6 +71,7 @@ export async function sendReports({
           reply_to: userEmail,
           subject,
           text: report.body,
+          ...(attachments ? { attachments } : {}),
         }),
       })
       const json = await res.json().catch(() => ({}))

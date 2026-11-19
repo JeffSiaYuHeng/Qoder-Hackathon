@@ -5,6 +5,7 @@ import { transcribeAudio } from './server/stt.js'
 import { analyzeStory } from './server/analyze.js'
 import { lookupChannels } from './server/lookup.js'
 import { sendReports } from './server/send.js'
+import { buildReports } from './server/report.js'
 import { fetchRegistry } from './server/registry.js'
 
 // Runs the api/*.js handlers locally so `npm run dev` works without `vercel dev`.
@@ -38,6 +39,18 @@ function devApi(env) {
         demoMode: env.DEMO_MODE === 'true',
         demoInbox: env.DEMO_INBOX,
         from: env.SEND_FROM,
+        pdfBase64: body.pdf_base64,
+        pdfFilename: body.pdf_filename,
+      }),
+    '/api/report': async (body) =>
+      buildReports({
+        story: body.story,
+        lang: body.lang,
+        form: body.form,
+        institutions: body.institutions,
+        templates: body.templates,
+        apiKey: env.AI_STUDIO_API,
+        model: env.AI_STUDIO_MODEL,
       }),
   }
 

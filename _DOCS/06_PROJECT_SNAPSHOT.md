@@ -1,35 +1,36 @@
 # 06 — Project Snapshot
 
-> **Living status file.** Last updated: 2026-11-19.
+> **Living status file.** Last updated: 2026-11-20.
 > Keep this current — see [How to update](#how-to-update) and the rule in [AGENTS.md](../AGENTS.md).
 
 ## Status at a glance
 
 | | |
 | --- | --- |
-| App | ScamSOS — React + Vite SPA backed by Supabase |
-| Latest commit | Story-first privacy fix: incidents client-side only, AI analyze → confirm institutions → plan with live lookup + reports/send |
-| Golden path | Guest by default → tell story (voice or text) → AI autofill + detected institutions → confirm → action plan → live lookup → email reports → print |
+| App | ScamSOS — guest-only React + Vite SPA; Supabase is read-only (institutions registry) |
+| Latest commit | Story-first privacy fix (`8515b37`); auth removal, AI reports, PDF download/attachment uncommitted |
+| Golden path | Tell story (voice or text) → AI autofill + detected institutions → confirm → action plan with AI report drafts → download PDF → email reports → print |
 | Build | `npm run build` passes |
-| Deploy | Not yet deployed; `vercel` CLI authed, deploy approved |
-| Demo blockers recorded | None in-repo. Teammate's Qoder-SDK analyze experiment preserved in gitignored `Qoder SDK/analyze-experiment/`; deployed analyze path is Gemini (`gemini-3.8-flash`) |
+| Deploy | **Live: https://scamsos.vercel.app** (Vercel CLI, prod env vars set; analyze/lookup/send smoke-tested on the deployed URL) |
+| Demo blockers recorded | None in-repo. All AI paths use Gemini (`AI_STUDIO_API`); the Qoder SDK experiment stays in gitignored `Qoder SDK/` |
 
 ## What works today
 
-- **Auth gate** — Supabase email/password; one-click demo account (hardcoded `HACK` in `src/AuthScreen.jsx`).
-- **Guest mode (default)** — app opens straight into intake as guest; no Supabase writes anywhere. Flag persists in `sessionStorage` (`scamsos.guest`); topbar shows a `Guest` badge plus a "Sign in" link.
+- **No auth** — `AuthScreen` and the Supabase auth state machine are gone. The app opens directly into intake; `sessionStorage` guest flags are gone too, and `src/lib/supabase.js` is used only to read the institutions registry.
 - **Story-first flow** — intake → confirm institutions → action plan (`Stepper.jsx` FLOW). `/api/analyze` (Gemini `gemini-3.8-flash`, structured JSON) autofills amount/time/method/suspect details and detects institutions (badged in the picker); user confirms/edits before the plan is built.
 - **Institution picker** — reads the `institutions` registry from Supabase; multi-select by slug across banks, e-wallets and platforms; shows AI-extracted summary + detected chips.
 - **Intake** — story, amount, time, contact method, suspect phone/account, transaction reference.
 - **Voice intake** — "Speak instead of typing" opens a hold-to-talk dialog (`VoiceDialog.jsx`): hold the mic to record (pulsing ring + equalizer bars), release to transcribe via `/api/stt` (Google AI Studio / Gemini); the transcript appends straight into the story box, with Record again / Done. Auto-stops at 60 s; Escape/backdrop cancels; the key stays server-side. `vite.config.js` mounts the same handler in dev.
-- **Action plan** — `src/lib/plan.js` builds ordered steps, a call script and **one report per institution** (mailto draft for every institution, even without a known address) client-side, localized EN/BM.
+- **Action plan** — `src/lib/plan.js` builds ordered steps, a call script and **one template report per institution** (mailto draft for every institution, even without a known address) client-side, localized EN/BM.
+- **AI report drafts** — `/api/report` (Gemini `gemini-3.8-flash`, structured JSON, 20 s deadline) rewrites the report bodies and produces a cleaned police statement. Each body is validated (institution name, supplied suspect fields verbatim, amount unchanged, disclaimer kept); any failure keeps the templates, so the screen renders instantly and never blocks.
 - **Live lookup** — `/api/lookup` (Gemini `gemini-3.5-flash-lite` + Google Search grounding, official-domain whitelist, live URL verification, 8 s timeout → registry fallback). UI shows the agent log and verified contact cards with live/registry badges.
 - **Send reports** — `/api/send` via Resend; `DEMO_MODE=true` redirects all mail to `DEMO_INBOX` with a `[DEMO for …]` subject prefix (never emails real banks). Per-report sent/failed status; mailto drafts remain as fallback. Real delivery tested.
 - **Privacy** — incidents live only in React state (`crypto.randomUUID()` id); nothing is written to Supabase. Incident tables are now unused.
-- **Outputs** — `tel:` / open / maps / email buttons, call script panel, printable police-ready report.
+- **Outputs** — `tel:` / open / maps / email buttons, call script panel, printable police-ready report (prints `statement` when AI drafted it).
+- **PDF report** — `src/lib/pdf.js` (pdf-lib, A4, lazy-loaded chunk) builds one incident PDF (police report + checklist status + every institution draft); "Download PDF" button on the action plan, and the same PDF is attached to the Resend emails when "Send all reports" runs (`server/send.js` validates base64 + ≤ 4 MB).
 - **i18n** — EN/BM toggle in the topbar, persisted in `localStorage` (`scamsos.lang`); includes the `stepsDone` progress label.
 - **Theme** — light/dark via `ThemeToggle.jsx`: device preference by default, a manual pick sets `data-theme` on `<html>`. All colours are design tokens at the top of `src/index.css`.
-- **Flow chrome** — `Stepper.jsx` (Tell us → Confirm → Action plan) and `EmergencyBar.jsx` (Call 997 on every screen, before sign-in).
+- **Flow chrome** — `Stepper.jsx` (Tell us → Confirm → Action plan) and `EmergencyBar.jsx` (Call 997 on every screen).
 - **Demo mode** — `?demo` (`src/demoMode.js` intercepts `tel:`/`mailto:` clicks with toasts; `src/lib/demo.js` serves canned analyze/lookup results and a one-click demo story). Both trigger on any `?demo` value.
 - **Styling** — Tailwind CSS v4 (`@tailwindcss/vite`, `@import "tailwindcss"` + a `@theme` bridge to the design-system tokens at the top of `src/index.css`), **plus** the design-system CSS: light/dark token sets and component classes (`.card`, `.panel`, `.step`, `.action-btn`, `.primary`, `.link`, `.card-grid`, voice dialog, print CSS). Component classes are unlayered, so they win over utilities. Spec in [06_DESIGN.md](06_DESIGN.md).
 
@@ -37,7 +38,7 @@
 
 - Screenshot OCR, case tracking.
 - Voice input is implemented and the hold/release flow was verified in-browser with a fake mic stream (speech WAV → transcript appended to the form); a real microphone still needs one manual permission-prompt check.
-- Browser verification of the new story-first golden path (analyze → picker → plan → lookup → send) is pending; endpoints were tested individually end-to-end.
+- The guest-only story-first golden path (analyze → picker → plan → AI reports → PDF) was verified in-browser on 2026-11-19; the deployed URL still needs a phone smoke test.
 
 ## Known gaps / decisions
 
@@ -45,7 +46,7 @@
 2. **PRD schema drift.** PRD §8 describes `institutions` with `kind`, `fraud_hotline`, `official_domains`, etc.; the live table uses `type`, `hotline`, `report_url`, `support_email`.
 3. **`reports` table is unused** — reports are client-rendered per institution and sent via Resend/mailto, not persisted.
 4. **`mockup.html`** is linked from the PRD but lives at `_DOCS/mockup.html` (not the repo root; the earlier "missing" note was wrong).
-5. **Demo credentials are hardcoded** in `src/AuthScreen.jsx` and documented in [03_TECH_STACK.md](03_TECH_STACK.md) — demo only.
+5. **Demo credentials** are gone with the auth screen; there is nothing to sign in to.
 6. **RLS is off**, but the app now only reads the `institutions` registry with the anon key; no incident data reaches the database.
 
 ## Resolved
@@ -90,3 +91,6 @@ After any task that changes app behavior, schema, or scope:
 - **2026-11-19** — Voice UI rebuilt as a hold-to-talk dialog (`src/VoiceDialog.jsx`): press-and-hold mic with pulse/equalizer animation, release-to-transcribe, spinner, transcript appended directly to the form, Record again / Done, Escape/backdrop cancel. Verified end to end in-browser with a fake mic stream; docs updated; uncommitted at the time of writing.
 - **2026-11-19** — Merge of `origin/main` in progress (merge commit pending): landed the light/dark design system (`06_DESIGN.md`, `src/index.css` tokens), `ThemeToggle`, `Stepper`, `EmergencyBar` and `?demo=1` (`src/demoMode.js`) alongside guest mode, EN/BM i18n (`stepsDone`) and voice intake. Tailwind v4 kept by owner decision, coexisting with the design-system CSS (token bridge in `@theme`; design classes unlayered and win over utilities; old `.grid` renamed `.card-grid`). Resolved conflicts in `00_STRUCTURE.md` and `03_TECH_STACK.md`. Still uncommitted: teammate edits to `api/analyze.js` + `server/analyze.js` swapping Gemini for the Qoder Agent SDK (local `qodercli`, env-var stripping) — excluded from the merge commit.
 - **2026-11-19** — Privacy + story-first flow shipped: no Supabase incident writes (React state only), guest by default, intake→confirm→plan order, Gemini analyze autofill + detected institutions, live lookup panel and per-institution reports with Resend send-all (DEMO_MODE inbox) in `ActionPlan.jsx`; `?demo` unified across `demoMode.js`/`lib/demo.js`; Gemini analyze restored from HEAD (SDK experiment kept in gitignored `Qoder SDK/analyze-experiment/`). Build passes; browser golden-path check and Vercel deploy still pending.
+- **2026-11-19** — Deployed to Vercel production via CLI: **https://scamsos.vercel.app** (project `scamsos`, GitHub repo connected, six prod env vars set). Deployed from the working tree, so it includes teammates' in-flight report/PDF pipeline (uncommitted). Smoke-tested deployed `/api/analyze` (correct extraction + detection), `/api/lookup` (registry fallback exercised) and `/api/send` (delivered to DEMO_INBOX, never the bank). Local git is ahead 1 / behind 3 of origin — merge+push of teammate work still pending.
+- **2026-11-20** — Workflow D: incident PDF via pdf-lib (`src/lib/pdf.js`, lazy `import()` → separate `pdf-*.js` chunk), "Download PDF" button + PDF build inside `sendAll` (`src/ActionPlan.jsx`), `pdf_base64`/`pdf_filename` forwarded `src/lib/agent.js` → `api/send.js` → `server/send.js` (validated, `attachments` per Resend payload; DEMO_MODE still routes to `DEMO_INBOX`). `reportsBusy` prop stub added; `downloadPdf`/`pdfBuilding` keys are provisional (another agent is adding theirs — merge on conflict). Build passes; download + send payload checked in-browser, `server/send.js` checked in Node. Uncommitted at the time of writing.
+- **2026-11-19** — Removed sign-in: deleted `AuthScreen.jsx`, auth/session/guest state and topbar account controls; app opens straight into intake. Reports now drafted by Gemini through `/api/report` (`server/report.js`, `src/lib/report.js`, strict validation, 20 s deadline → templates) instead of the local-only Qoder SDK; `src/App.jsx` merges the AI bodies + statement in the background. Verified locally and on https://scamsos.vercel.app (`/api/report` → `source:"ai"`); build passes. Docs updated; uncommitted at the time of writing.

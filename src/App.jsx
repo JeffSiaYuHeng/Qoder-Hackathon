@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { LangContext, makeT, localeFor } from './lib/i18n'
 import InstitutionPicker from './InstitutionPicker'
 import IntakeForm from './IntakeForm'
@@ -8,6 +8,7 @@ import Stepper from './Stepper'
 import EmergencyBar from './EmergencyBar'
 import { buildActionPlan } from './lib/plan'
 import { analyzeStory } from './lib/agent'
+import { draftReports } from './lib/report'
 
 // Privacy (PRD §9): incident data lives in React state only — nothing is written to Supabase.
 export default function App() {
@@ -19,6 +20,9 @@ export default function App() {
   const [saving, setSaving] = useState(false)
   const [analyzeNote, setAnalyzeNote] = useState(null)
   const [lang, setLang] = useState(() => localStorage.getItem('scamsos.lang') || 'en')
+  const [reportsBusy, setReportsBusy] = useState(false)
+  // Bumped on every draft request/reset so a late AI reply can't overwrite a newer incident.
+  const draftSeq = useRef(0)
 
   const t = useMemo(() => makeT(lang), [lang])
 
@@ -61,8 +65,52 @@ export default function App() {
       steps: plan.steps.map((s, idx) => ({ ...s, id: `step-${idx}`, done: false })),
       call_script: plan.call_script,
       reports: plan.reports,
+      statement: null,
     })
     setStage('plan')
+
+    // Templates render immediately; the AI rewrite lands if it arrives in time.
+    const seq = ++draftSeq.current
+    setReportsBusy(true)
+    draftReports({
+      story: form.victim_summary,
+      lang,
+      form: {
+        amount: form.amount,
+        occurred_at: form.occurred_at,
+        contact_method: form.contact_method,
+        scammer_phone: form.scammer_phone,
+        scammer_account: form.scammer_account,
+        transaction_ref: form.transaction_ref,
+      },
+      institutions: items.map((i) => ({ slug: i.slug, name: i.name, type: i.type })),
+      templates: plan.reports.map((r) => ({ slug: r.slug, name: r.name, type: r.type, subject: r.subject, body: r.body })),
+    })
+      .then((draft) => {
+        if (seq !== draftSeq.current) return
+        setIncident((inc) => {
+          if (!inc) return inc
+          const bySlug = new Map((draft.reports || []).map((r) => [r.slug, r]))
+          return {
+            ...inc,
+            statement: draft.statement || inc.statement,
+            reports: inc.reports.map((r) => {
+              const next = bySlug.get(r.slug)
+              if (!next) return r
+              return {
+                ...r,
+                subject: next.subject,
+                body: next.body,
+                mailto: `mailto:${r.to || ''}?subject=${encodeURIComponent(next.subject)}&body=${encodeURIComponent(next.body)}`,
+              }
+            }),
+          }
+        })
+        setReportsBusy(false)
+      })
+      .catch(() => {
+        if (seq === draftSeq.current) setReportsBusy(false)
+      })
   }
 
   function toggleStep(step) {
@@ -73,6 +121,8 @@ export default function App() {
   }
 
   function reset() {
+    draftSeq.current += 1
+    setReportsBusy(false)
     setIncident(null)
     setSelected([])
     setDetected([])
@@ -118,6 +168,7 @@ export default function App() {
             institutions={selected}
             onToggle={toggleStep}
             onReset={reset}
+            reportsBusy={reportsBusy}
           />
         )}
       </main>
