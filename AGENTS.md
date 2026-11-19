@@ -58,7 +58,7 @@ npm run build
 
 ## UI rules
 
-The look lives in the tokens at the top of `src/index.css`. Use `var(--…)` and don't hardcode colours or sizes.
+The look lives in the tokens at the top of `src/index.css`. Use `var(--…)` and don't hardcode colours or sizes. Full spec: `_DOCS/06_DESIGN.md`.
 
 - One accent colour (`--accent`), only for things you tap. Calls (`tel:` links) are styled solid accent automatically.
 - Status never relies on colour alone. Done = tick + strike-through. Warning = amber box with "!".

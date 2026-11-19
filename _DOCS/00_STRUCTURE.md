@@ -12,6 +12,7 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 | [03_TECH_STACK.md](03_TECH_STACK.md) | Stack choices, project ref, commands |
 | [04_PRD.md](04_PRD.md) | Requirements, screens, demo script |
 | [05_PRODUCT_PLAN.md](05_PRODUCT_PLAN.md) | Earlier 2-hour plan (background) |
+| [06_DESIGN.md](06_DESIGN.md) | Design system: colour, type, components, light/dark theme, copy rules, demo setup |
 
 `AGENTS.md` stays at the repo root, not here — agent tooling auto-loads it from there.
 
@@ -25,7 +26,8 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 │   ├── 02_SERVERSIDE_API.md
 │   ├── 03_TECH_STACK.md
 │   ├── 04_PRD.md
-│   └── 05_PRODUCT_PLAN.md
+│   ├── 05_PRODUCT_PLAN.md
+│   └── 06_DESIGN.md
 ├── AGENTS.md                 # hackathon rules for agents
 ├── db/
 │   ├── schema.sql            # tables (apply in Supabase SQL editor)
@@ -42,7 +44,8 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
     ├── InstitutionPicker.jsx # reads the institutions registry
     ├── IntakeForm.jsx        # incident intake form
     ├── ActionPlan.jsx        # checklist, call script, print report, mailto drafts
-    ├── index.css
+    ├── ThemeToggle.jsx       # light/dark switch (top bar + sign-in screen)
+    ├── index.css             # design tokens at the top, then component styles + print CSS
     └── lib/
         ├── supabase.js       # single Supabase client
         └── plan.js           # rule-based plan builder (LLM stand-in)
@@ -83,6 +86,8 @@ AuthScreen ──sign in──► InstitutionPicker ──stage "pick"
 | Institution contacts (hotline, fraud page, email) | `db/seed.sql`, then re-run it in Supabase |
 | Table columns / constraints | `db/schema.sql`, then re-run it in Supabase |
 | Step order or email/call script wording | `src/lib/plan.js` |
-| Screens and copy | `src/*.jsx` |
+| Screens and copy | `src/*.jsx` (copy rules: [06_DESIGN.md](06_DESIGN.md) §8) |
+| Colours, fonts, spacing, light/dark values | Tokens at the top of `src/index.css` ([06_DESIGN.md](06_DESIGN.md) §3–5) |
+| How a component looks | Component section of `src/index.css` ([06_DESIGN.md](06_DESIGN.md) §6) |
 | Printed police report layout | `src/ActionPlan.jsx` + print CSS in `src/index.css` |
 | Product scope | [04_PRD.md](04_PRD.md) |

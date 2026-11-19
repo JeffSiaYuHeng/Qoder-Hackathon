@@ -8,6 +8,8 @@ Hackathon demo stack. One app, one process, boring tech — see [AGENTS.md](../A
 | --- | --- | --- |
 | Frontend | React (plain JavaScript, no TypeScript) | Single-page app |
 | Build tool | Vite | Instant dev server, zero config |
+| Styling | Plain CSS with design tokens (CSS custom properties) | No CSS framework. Light + dark theme. See [06_DESIGN.md](06_DESIGN.md) |
+| Fonts | Inter (body) + Plus Jakarta Sans (headings), Google Fonts | Falls back to the system font if blocked |
 | Database | Supabase (hosted Postgres) | Accessed via `@supabase/supabase-js` |
 | Hosting | Vercel | Already authenticated locally |
 
@@ -25,8 +27,9 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 ├── index.html
 ├── src/
 │   ├── main.jsx
-│   ├── App.jsx           # institution picker (first flow step)
-│   ├── index.css
+│   ├── App.jsx           # stage state machine (see 00_STRUCTURE.md)
+│   ├── ThemeToggle.jsx   # light/dark switch
+│   ├── index.css         # design tokens + component styles (see 06_DESIGN.md)
 │   └── lib/supabase.js   # single client export
 ├── .env.local            # real keys, never committed
 ├── .env.example
