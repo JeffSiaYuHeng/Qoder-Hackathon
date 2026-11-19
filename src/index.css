@@ -73,6 +73,55 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Dark theme: same roles, dark values. Follows the device unless the toggle picked light/dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --ink: #e8edf2;
+    --ink-2: #a9b6c4;
+    --ink-3: #93a1b0;
+    --surface: #141b24;
+    --surface-2: #1d2732;
+    --line: #2a3440;
+    --accent: #ff8a4c;
+    --accent-hover: #ffa36f;
+    --accent-ink: #1a0d05;
+    --accent-soft: #2a1a10;
+    --ok: #4ade80;
+    --ok-soft: #12261a;
+    --warn-ink: #fcd34d;
+    --warn-soft: #2a2210;
+    --warn-line: #d97706;
+    --danger: #ff8a8e;
+    --shadow: none;
+    --focus: 0 0 0 3px rgb(255 138 76 / 0.4);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b0f14;
+  --ink: #e8edf2;
+  --ink-2: #a9b6c4;
+  --ink-3: #93a1b0;
+  --surface: #141b24;
+  --surface-2: #1d2732;
+  --line: #2a3440;
+  --accent: #ff8a4c;
+  --accent-hover: #ffa36f;
+  --accent-ink: #1a0d05;
+  --accent-soft: #2a1a10;
+  --ok: #4ade80;
+  --ok-soft: #12261a;
+  --warn-ink: #fcd34d;
+  --warn-soft: #2a2210;
+  --warn-line: #d97706;
+  --danger: #ff8a8e;
+  --shadow: none;
+  --focus: 0 0 0 3px rgb(255 138 76 / 0.4);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -139,6 +188,33 @@ main {
   background: var(--surface);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-toggle {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--ink-3);
+}
+
+.auth > .theme-toggle {
+  float: right;
+}
+
+.topbar .link {
   white-space: nowrap;
 }
 
@@ -688,6 +764,10 @@ details.panel[open] summary::before {
     font-size: var(--fs-xl);
   }
 
+  .topbar .badge {
+    display: none; /* the signed-in email isn't worth the room on a phone */
+  }
+
   .row {
     grid-template-columns: 1fr;
   }
@@ -721,6 +801,7 @@ details.panel[open] summary::before {
 @media print {
   :root {
     color-scheme: light;
+    background: #fff;
   }
 
   body {

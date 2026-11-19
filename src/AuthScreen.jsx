@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from './lib/supabase'
+import ThemeToggle from './ThemeToggle'
 
 // HACK: demo account hardcoded for the on-stage flow
 const DEMO = { email: 'demo@scamsos.my', password: 'ScamSOS2026!' }
@@ -22,6 +23,7 @@ export default function AuthScreen() {
   return (
     <main>
       <div className="auth">
+        <ThemeToggle />
         <span className="logo">ScamSOS</span>
         <h1>Sign in to start</h1>
         <p className="sub">

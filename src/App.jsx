@@ -5,6 +5,7 @@ import InstitutionPicker from './InstitutionPicker'
 import IntakeForm from './IntakeForm'
 import ActionPlan from './ActionPlan'
 import { buildActionPlan } from './lib/plan'
+import ThemeToggle from './ThemeToggle'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -110,6 +111,7 @@ export default function App() {
       <header className="topbar">
         <span className="logo">ScamSOS</span>
         <span className="topbar-right">
+          <ThemeToggle />
           <span className="badge">{session.user.email}</span>
           <button className="link" onClick={() => supabase.auth.signOut()}>
             Sign out
