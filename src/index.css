@@ -332,6 +332,40 @@ h2 {
   font-weight: 700;
 }
 
+/* With a badge the tile becomes: badge on the left, name and hotline on the right. */
+.card:has(.card-avatar) {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  column-gap: var(--s-3);
+  row-gap: 0;
+  align-content: center;
+}
+
+.card-avatar {
+  grid-row: span 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.card.selected .card-avatar {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* No hotline line (e.g. Shopee): centre the name against the badge. */
+.card-name:last-child {
+  grid-row: span 2;
+  align-self: center;
+}
+
 .card-meta {
   font-size: var(--fs-sm);
   color: var(--ink-2);
@@ -536,6 +570,40 @@ textarea {
 .hints li::marker {
   content: '!  ';
   font-weight: 800;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+}
+
+.progress-text {
+  flex: none;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-track {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ok);
+  transition: width 250ms var(--ease);
+}
+
+.progress + .steps {
+  margin-top: var(--s-3);
 }
 
 .steps {
@@ -954,6 +1022,23 @@ details.panel[open] summary::before {
     display: none; /* the signed-in email isn't worth the room on a phone */
   }
 
+  /* Institutions as a full-width list, like a banking app's bank picker. */
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--s-2);
+  }
+
+  .card {
+    min-height: 64px;
+    padding-top: var(--s-3);
+    padding-bottom: var(--s-3);
+  }
+
+  .card.selected::after {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
   .row {
     grid-template-columns: 1fr;
   }
@@ -1046,10 +1131,16 @@ details.panel[open] summary::before {
     width: 36%;
   }
 
+  main > div:has(> .steps) > .progress,
   main > div:has(> .steps) > .steps {
     float: left;
+    clear: left;
     width: calc(64% - var(--s-6));
     margin-top: var(--s-4);
+  }
+
+  main > div:has(> .steps) > .progress + .steps {
+    margin-top: var(--s-3);
   }
 
   main > div:has(> .steps) > .footer-row {

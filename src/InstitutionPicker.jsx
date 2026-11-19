@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 
+// Short names Malaysians already use, shown in a round badge like a banking app's bank list.
+const BADGE = {
+  maybank: 'MBB',
+  cimb: 'CIMB',
+  'public-bank': 'PBB',
+  rhb: 'RHB',
+  'hong-leong': 'HLB',
+  'tng-ewallet': 'TNG',
+  shopee: 'SPE',
+}
+
 const GROUPS = [
   ['bank', 'Banks'],
   ['ewallet', 'E-wallets'],
@@ -54,6 +65,9 @@ export default function InstitutionPicker({ onContinue }) {
                   onClick={() => toggle(i.id)}
                   aria-pressed={selected.includes(i.id)}
                 >
+                  <span className="card-avatar" aria-hidden="true">
+                    {BADGE[i.slug] || i.name.slice(0, 1)}
+                  </span>
                   <span className="card-name">{i.name}</span>
                   {i.hotline && <span className="card-meta">{i.hotline}</span>}
                 </button>
