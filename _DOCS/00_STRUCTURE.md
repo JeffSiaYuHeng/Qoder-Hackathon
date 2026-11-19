@@ -12,6 +12,7 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 | [03_TECH_STACK.md](03_TECH_STACK.md) | Stack choices, project ref, commands |
 | [04_PRD.md](04_PRD.md) | Requirements, screens, demo script |
 | [05_PRODUCT_PLAN.md](05_PRODUCT_PLAN.md) | Earlier 2-hour plan (background) |
+| [06_PROJECT_SNAPSHOT.md](06_PROJECT_SNAPSHOT.md) | Living status: what works, gaps, next steps, update log |
 
 `AGENTS.md` stays at the repo root, not here — agent tooling auto-loads it from there.
 
@@ -25,7 +26,8 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 │   ├── 02_SERVERSIDE_API.md
 │   ├── 03_TECH_STACK.md
 │   ├── 04_PRD.md
-│   └── 05_PRODUCT_PLAN.md
+│   ├── 05_PRODUCT_PLAN.md
+│   └── 06_PROJECT_SNAPSHOT.md
 ├── AGENTS.md                 # hackathon rules for agents
 ├── db/
 │   ├── schema.sql            # tables (apply in Supabase SQL editor)
@@ -42,7 +44,7 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
     ├── InstitutionPicker.jsx # reads the institutions registry
     ├── IntakeForm.jsx        # incident intake form
     ├── ActionPlan.jsx        # checklist, call script, print report, mailto drafts
-    ├── index.css
+    ├── index.css             # Tailwind v4 entry, theme tokens, print CSS
     └── lib/
         ├── supabase.js       # single Supabase client
         ├── i18n.js           # EN/BM dictionary, context hook, localStorage persistence

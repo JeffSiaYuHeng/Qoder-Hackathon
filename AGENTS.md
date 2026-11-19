@@ -4,7 +4,7 @@
 
 This is a **2-hour hackathon project**. It exists to produce a working demo, fast. Judge criteria is a live demo that works, not code quality.
 
-**Current status:** Empty repo. Fill in the sections below as the project takes shape.
+**Current status:** see [_DOCS/06_PROJECT_SNAPSHOT.md](_DOCS/06_PROJECT_SNAPSHOT.md). Keep it current — see "Project snapshot" below.
 
 ## Hard Rules
 
@@ -48,6 +48,15 @@ npm run dev
 # build
 npm run build
 ```
+
+## Project snapshot
+
+`_DOCS/06_PROJECT_SNAPSHOT.md` is the live status file. When you finish any task that changes app behavior, schema, or scope:
+
+1. Update the affected sections there — keep them short and factual.
+2. Set **Last updated** to today's date.
+3. Append **one** dated line under **Update log**. Append only — never rewrite or delete another agent's line.
+4. If the work is left uncommitted, say so in that log line.
 
 ## Conventions
 

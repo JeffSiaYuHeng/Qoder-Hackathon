@@ -7,6 +7,7 @@ Hackathon demo stack. One app, one process, boring tech — see [AGENTS.md](../A
 | Layer | Choice | Notes |
 | --- | --- | --- |
 | Frontend | React (plain JavaScript, no TypeScript) | Single-page app |
+| Styling | Tailwind CSS v4 via `@tailwindcss/vite` | Theme tokens in `src/index.css`; printable-report CSS kept hand-written |
 | Build tool | Vite | Instant dev server, zero config |
 | Database | Supabase (hosted Postgres) | Accessed via `@supabase/supabase-js` |
 | Hosting | Vercel | Already authenticated locally |
@@ -24,10 +25,17 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 │   └── seed.sql          # verified fallback contacts
 ├── index.html
 ├── src/
-│   ├── main.jsx
-│   ├── App.jsx           # institution picker (first flow step)
+│   ├── main.jsx          # React entry + LangContext provider
+│   ├── App.jsx           # stage state machine + Supabase reads/writes
+│   ├── AuthScreen.jsx    # email/password sign-in (demo account hardcoded)
+│   ├── InstitutionPicker.jsx
+│   ├── IntakeForm.jsx
+│   ├── ActionPlan.jsx    # checklist, script, print report, mailto drafts
 │   ├── index.css
-│   └── lib/supabase.js   # single client export
+│   └── lib/
+│       ├── supabase.js   # single client export
+│       ├── i18n.js       # EN/BM dictionary + useI18n
+│       └── plan.js       # rule-based plan builder
 ├── .env.local            # real keys, never committed
 ├── .env.example
 └── _DOCS/                # docs — see 00_STRUCTURE.md

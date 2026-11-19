@@ -22,39 +22,41 @@ export default function AuthScreen() {
   }
 
   return (
-    <main>
-      <div className="auth">
-        <div className="footer-row">
-          <span className="logo">ScamSOS</span>
+    <main className="mx-auto max-w-[720px] px-5 pb-16 pt-8">
+      <div className="mx-auto mt-12 max-w-[380px]">
+        <div className="flex items-center justify-between">
+          <span className="font-bold tracking-wide text-brand">ScamSOS</span>
           <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
             {lang === 'en' ? 'BM' : 'EN'}
           </button>
         </div>
-        <h1>{t('signInTitle')}</h1>
-        <p className="sub">{t('signInSub')}</p>
+        <h1 className="mb-3 text-[28px] font-semibold leading-tight">{t('signInTitle')}</h1>
+        <p className="mb-8 leading-relaxed text-muted">{t('signInSub')}</p>
 
         <form onSubmit={(e) => signIn(null, e)}>
-          <label>
+          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
             {t('email')}
             <input
               type="email"
+              className="field"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
             />
           </label>
-          <label>
+          <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
             {t('password')}
             <input
               type="password"
+              className="field"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
             />
           </label>
-          <button className="primary" disabled={busy}>
+          <button className="btn-primary" disabled={busy}>
             {busy ? t('signingIn') : t('signIn')}
           </button>
         </form>
@@ -62,7 +64,7 @@ export default function AuthScreen() {
         <button className="link" onClick={() => signIn(DEMO)} disabled={busy}>
           {t('useDemo')}
         </button>
-        {error && <p className="status error">{error}</p>}
+        {error && <p className="mt-2.5 text-xs text-red-300">{error}</p>}
       </div>
     </main>
   )

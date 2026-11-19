@@ -22,12 +22,12 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
 
   return (
     <div>
-      <h1 className="no-print">{t('planTitle')}</h1>
-      <p className="sub no-print">{t('planSub')}</p>
+      <h1 className="no-print mb-3 text-[34px] font-semibold leading-tight">{t('planTitle')}</h1>
+      <p className="no-print mb-8 leading-relaxed text-muted">{t('planSub')}</p>
 
       <section className="panel no-print">
-        <h2>{t('incidentDetected')}</h2>
-        <p className="incident-line">
+        <h2 className="m-0 mb-2.5 text-xs uppercase tracking-[0.1em] text-dim">{t('incidentDetected')}</h2>
+        <p className="m-0 text-sm">
           {amountText}
           {' · '}
           {whenText}
@@ -35,7 +35,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
           {institutions.map((i) => i.name).join(', ')}
         </p>
         {missing.length > 0 && (
-          <ul className="hints">
+          <ul className="mt-3 list-disc pl-5 text-[13px] leading-relaxed text-[#ffb3b5]">
             {missing.map((h) => (
               <li key={h}>{h}</li>
             ))}
@@ -43,16 +43,26 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
         )}
       </section>
 
-      <ol className="steps no-print">
+      <ol className="no-print m-0 mt-5 flex list-none flex-col gap-2.5 p-0">
         {steps.map((s, idx) => (
-          <li key={s.id} className={s.done ? 'step done' : 'step'}>
-            <label className="check">
-              <input type="checkbox" checked={s.done} onChange={() => onToggle(s)} />
-              <span className="step-num">{idx + 1}</span>
+          <li
+            key={s.id}
+            className={`flex items-center gap-3 rounded-xl border border-edge bg-panel px-3.5 py-3 max-sm:flex-wrap ${s.done ? 'opacity-60' : ''}`}
+          >
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                className="h-[18px] w-[18px] accent-brand"
+                checked={s.done}
+                onChange={() => onToggle(s)}
+              />
+              <span className="text-[13px] font-bold text-brand">{idx + 1}</span>
             </label>
-            <div className="step-body">
-              <span className="step-title">{s.title}</span>
-              <span className="step-urgency">{s.urgency === 'now' ? t('doNow') : t('next')}</span>
+            <div className="flex flex-1 flex-col gap-0.5">
+              <span className={`text-sm ${s.done ? 'line-through' : ''}`}>{s.title}</span>
+              <span className="text-[11px] uppercase tracking-[0.06em] text-dim">
+                {s.urgency === 'now' ? t('doNow') : t('next')}
+              </span>
             </div>
             {s.value &&
               (s.action === 'call' ? (
@@ -69,15 +79,17 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
       </ol>
 
       <details className="panel no-print">
-        <summary>{t('callScriptSummary')}</summary>
-        <pre className="script">{incident.call_script}</pre>
+        <summary className="cursor-pointer text-sm font-semibold">{t('callScriptSummary')}</summary>
+        <pre className="whitespace-pre-wrap rounded-lg bg-[#0f151c] p-3 text-[13px] leading-relaxed text-[#c9d3dd]">
+          {incident.call_script}
+        </pre>
       </details>
 
       {emailSteps.length > 0 && (
         <section className="panel no-print">
-          <h2>{t('reportToPlatform')}</h2>
-          <p className="sub">{t('reportToPlatformSub')}</p>
-          <div className="row">
+          <h2 className="m-0 mb-2 text-xs uppercase tracking-[0.1em] text-dim">{t('reportToPlatform')}</h2>
+          <p className="mb-3 text-sm text-muted">{t('reportToPlatformSub')}</p>
+          <div className="flex flex-wrap gap-2">
             {emailSteps.map((s) => (
               <a key={s.id} className="action-btn" href={s.value}>
                 {s.title}
@@ -87,8 +99,8 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
         </section>
       )}
 
-      <div className="footer-row no-print">
-        <button className="primary" onClick={() => window.print()}>
+      <div className="no-print mt-4 flex items-center justify-between gap-3">
+        <button className="btn-primary" onClick={() => window.print()}>
           {t('printReport')}
         </button>
         <button className="link" onClick={onReset}>
