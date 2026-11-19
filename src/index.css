@@ -562,6 +562,25 @@ select {
   transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 
+/* Boxes the AI filled from the victim's voice: amber "please check" until they edit them. */
+input.ai-filled,
+select.ai-filled {
+  border-color: var(--warn-line);
+  background: var(--warn-soft);
+  color: var(--ink);
+}
+
+.autofill-status {
+  margin: var(--s-2) 0 var(--s-4);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.autofill-status.is-error {
+  color: var(--danger);
+}
+
 input::placeholder,
 textarea::placeholder {
   color: var(--ink-3);

@@ -58,6 +58,10 @@ export const dict = {
     'voiceClose': 'Close',
     'voiceHint': 'Speak in English or Malay — audio is sent to Google AI Studio for transcription.',
     'voiceError': 'Could not transcribe: {msg}',
+    'autofillWorking': 'Filling in the other boxes from what you said…',
+    'autofillDone': 'Filled from your voice: {fields}. Please check them, especially the numbers.',
+    'autofillNone': 'Your words were added. No amount or other details were found — fill them in if you know them.',
+    'autofillError': 'Your words were added, but the other boxes could not be filled automatically. Please fill them in.',
 
     'planTitle': 'Your action plan',
     'planSub': 'Do these in order. Every minute counts — the first hour is when money is still recoverable.',
@@ -207,6 +211,10 @@ export const dict = {
     'voiceClose': 'Tutup',
     'voiceHint': 'Bercakap dalam bahasa Inggeris atau Melayu — audio dihantar ke Google AI Studio untuk transkripsi.',
     'voiceError': 'Gagal mentranskripsi: {msg}',
+    'autofillWorking': 'Sedang mengisi kotak lain daripada apa yang anda katakan…',
+    'autofillDone': 'Diisi daripada suara anda: {fields}. Sila semak, terutamanya nombor.',
+    'autofillNone': 'Kata-kata anda telah ditambah. Tiada jumlah atau butiran lain dikesan — isi jika anda tahu.',
+    'autofillError': 'Kata-kata anda telah ditambah, tetapi kotak lain tidak dapat diisi secara automatik. Sila isi sendiri.',
 
     'planTitle': 'Pelan tindakan anda',
     'planSub': 'Lakukan mengikut urutan. Setiap minit berharga — jam pertama ialah masa wang masih boleh dipulihkan.',
