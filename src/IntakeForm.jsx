@@ -1,20 +1,23 @@
 import { useState } from 'react'
 import { useI18n } from './lib/i18n'
+import { DEMO_MODE, CANNED_STORY } from './lib/demo'
 import VoiceDialog from './VoiceDialog'
 
 const METHODS = ['call', 'whatsapp', 'sms', 'social', 'marketplace', 'other']
 
-export default function IntakeForm({ institutions, saving, error, onBack, onSubmit }) {
+const EMPTY_FORM = {
+  victim_summary: '',
+  amount: '',
+  occurred_at: '',
+  contact_method: '',
+  scammer_phone: '',
+  scammer_account: '',
+  transaction_ref: '',
+}
+
+export default function IntakeForm({ initialForm, saving, error, onBack, onSubmit }) {
   const { t } = useI18n()
-  const [form, setForm] = useState({
-    victim_summary: '',
-    amount: '',
-    occurred_at: '',
-    contact_method: '',
-    scammer_phone: '',
-    scammer_account: '',
-    transaction_ref: '',
-  })
+  const [form, setForm] = useState(initialForm || EMPTY_FORM)
   const [voiceOpen, setVoiceOpen] = useState(false)
 
   function addTranscript(text) {
@@ -36,7 +39,7 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
   return (
     <div>
       <h1>{t('intakeTitle')}</h1>
-      <p className="sub">{t('intakeSub', { names: institutions.map((i) => i.name).join(', ') })}</p>
+      <p className="sub">{t('intakeSubSolo')}</p>
 
       <form onSubmit={submit} className="intake">
         <label>
@@ -51,9 +54,20 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
           />
         </label>
 
-        <button type="button" className="action-btn voice-trigger" onClick={() => setVoiceOpen(true)}>
-          {t('voiceSpeak')}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" className="action-btn voice-trigger" onClick={() => setVoiceOpen(true)}>
+            {t('voiceSpeak')}
+          </button>
+          {DEMO_MODE && (
+            <button
+              type="button"
+              className="link"
+              onClick={() => setForm((f) => ({ ...f, victim_summary: CANNED_STORY }))}
+            >
+              {t('demoStory')}
+            </button>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label>
@@ -96,11 +110,15 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <button type="button" className="link" onClick={onBack}>
-            {t('back')}
-          </button>
+          {onBack ? (
+            <button type="button" className="link" onClick={onBack}>
+              {t('back')}
+            </button>
+          ) : (
+            <span className="status">{t('privacyNote')}</span>
+          )}
           <button className="primary" disabled={saving}>
-            {saving ? t('buildingPlan') : t('getPlan')}
+            {saving ? t('analyzing') : t('analyzeCta')}
           </button>
         </div>
         {error && <p className="status error">{error}</p>}

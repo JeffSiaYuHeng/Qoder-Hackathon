@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useI18n, localeFor } from './lib/i18n'
+import { lookupInstitutions, sendAllReports } from './lib/agent'
 
 const HINT_KEYS = [
   ['amount', 'hint.amount'],
@@ -10,9 +12,11 @@ const HINT_KEYS = [
 export default function ActionPlan({ incident, institutions, onToggle, onReset }) {
   const { lang, t } = useI18n()
   const locale = localeFor(lang)
+  const [lookup, setLookup] = useState({ busy: false, log: [], results: null, error: null })
+  const [send, setSend] = useState({ busy: false, email: '', statuses: {}, error: null })
   const steps = incident.steps
   const missing = HINT_KEYS.filter(([field]) => !incident[field]).map(([, key]) => t(key))
-  const emailSteps = steps.filter((s) => s.action === 'email')
+  const reports = incident.reports || []
   const amountText = incident.amount
     ? `RM ${Number(incident.amount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}`
     : t('amountUnknown')
@@ -20,6 +24,30 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
     ? new Date(incident.occurred_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
     : t('timeUnknown')
   const doneCount = steps.filter((s) => s.done).length
+
+  async function runLookup() {
+    setLookup({ busy: true, log: [], results: null, error: null })
+    try {
+      const out = await lookupInstitutions(institutions)
+      setLookup({ busy: false, log: out.log, results: out.results, error: null })
+    } catch (err) {
+      setLookup({ busy: false, log: [], results: null, error: err.message })
+    }
+  }
+
+  async function sendAll() {
+    setSend((s) => ({ ...s, busy: true, error: null }))
+    try {
+      const results = await sendAllReports(send.email, reports)
+      setSend((s) => ({
+        ...s,
+        busy: false,
+        statuses: Object.fromEntries(results.map((r) => [r.institution_id, r])),
+      }))
+    } catch (err) {
+      setSend((s) => ({ ...s, busy: false, error: err.message }))
+    }
+  }
 
   return (
     <div>
@@ -90,19 +118,79 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset }
         <pre className="script">{incident.call_script}</pre>
       </details>
 
-      {emailSteps.length > 0 && (
-        <section className="panel no-print">
-          <h2>{t('reportToPlatform')}</h2>
-          <p className="sub">{t('reportToPlatformSub')}</p>
-          <div className="row">
-            {emailSteps.map((s) => (
-              <a key={s.id} className="action-btn" href={s.value}>
-                {s.title}
-              </a>
+      <section className="panel no-print">
+        <h2>{t('lookupCta')}</h2>
+        <button className="primary" onClick={runLookup} disabled={lookup.busy}>
+          {lookup.busy ? t('lookupRunning') : t('lookupCta')}
+        </button>
+        {lookup.error && <p className="status error">{t('lookupFailed', { msg: lookup.error })}</p>}
+        {lookup.log.length > 0 && <pre className="lookup-log">{lookup.log.join('\n')}</pre>}
+        {lookup.results && (
+          <div className="verified-grid">
+            {lookup.results.map((r) => (
+              <div key={r.slug} className="verified-card">
+                <span className="card-name">{r.name}</span>
+                <span className={r.source === 'live' ? 'verified-source live' : 'verified-source'}>
+                  {r.source === 'live' ? t('lookupLive') : t('lookupRegistry')}
+                </span>
+                {r.hotline && <span className="card-meta">{r.hotline}</span>}
+                {r.fraud_page_url && (
+                  <a className="action-btn" href={r.fraud_page_url} target="_blank" rel="noreferrer">
+                    {t('verb.open')}
+                  </a>
+                )}
+              </div>
             ))}
           </div>
-        </section>
-      )}
+        )}
+      </section>
+
+      <section className="panel no-print">
+        <h2>{t('reportsTitle')}</h2>
+        <p className="sub">{t('reportsSub')}</p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            sendAll()
+          }}
+        >
+          <label>
+            {t('yourEmail')}
+            <input
+              type="email"
+              value={send.email}
+              onChange={(e) => setSend((s) => ({ ...s, email: e.target.value }))}
+              placeholder="you@example.com"
+            />
+          </label>
+          <div className="footer-row">
+            <button className="primary" type="submit" disabled={send.busy || !send.email || !reports.length}>
+              {send.busy ? t('sending') : t('sendAll')}
+            </button>
+          </div>
+        </form>
+        {send.error && <p className="status error">{t('sendUnavailable')}</p>}
+        {reports.map((r) => {
+          const status = send.statuses[r.slug]
+          return (
+            <details key={r.slug} className="panel">
+              <summary>
+                {r.name}
+                {status && (
+                  <span className={status.status === 'sent' ? 'send-status sent' : 'send-status failed'}>
+                    {status.status === 'sent' ? t('sent') : t('sendFailed')}
+                  </span>
+                )}
+              </summary>
+              <p className="status">{r.subject}</p>
+              <pre className="script">{r.body}</pre>
+              <a className="action-btn" href={r.mailto}>
+                {t('verb.email')}
+              </a>
+            </details>
+          )
+        })}
+      </section>
 
       <div className="footer-row no-print">
         <button className="primary" onClick={() => window.print()}>

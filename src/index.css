@@ -385,6 +385,73 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
+/* AI-detected badge on institution tiles */
+.detected-chip {
+  display: inline-block;
+  margin-left: var(--s-2);
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* Live agent lookup: log + verified channel cards */
+.lookup-log {
+  white-space: pre-wrap;
+  background: var(--surface-2);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--ink-2);
+  margin: var(--s-3) 0 0;
+}
+
+.verified-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+}
+
+.verified-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
+}
+
+.verified-source {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.verified-source.live {
+  color: var(--ok);
+}
+
+/* One-click send statuses */
+.send-status {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.send-status.sent {
+  color: var(--ok);
+}
+
+.send-status.failed {
+  color: var(--danger);
+}
+
 footer {
   margin-top: var(--s-6);
   padding-top: var(--s-4);

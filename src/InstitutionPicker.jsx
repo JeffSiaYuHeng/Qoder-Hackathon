@@ -19,10 +19,10 @@ const GROUPS = [
   ['platform', 'platforms'],
 ]
 
-export default function InstitutionPicker({ onContinue }) {
+export default function InstitutionPicker({ initialSelected = [], detected = [], form, analyzeNote, onBack, onContinue }) {
   const { t } = useI18n()
   const [institutions, setInstitutions] = useState([])
-  const [selected, setSelected] = useState([])
+  const [selected, setSelected] = useState(initialSelected)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -47,6 +47,23 @@ export default function InstitutionPicker({ onContinue }) {
       <h1>{t('pickTitle')}</h1>
       <p className="sub">{t('pickSub')}</p>
 
+      {analyzeNote && <p className="status error">{analyzeNote}</p>}
+
+      {form && (
+        <section className="panel">
+          <h2>{t('aiExtracted')}</h2>
+          <p className="incident-line">
+            {form.amount ? `RM ${Number(form.amount).toLocaleString('en-MY', { minimumFractionDigits: 2 })}` : t('amountUnknown')}
+            {' · '}
+            {form.contact_method ? t(`method.${form.contact_method}`) : t('methodSelect')}
+            {form.scammer_account && ` · ${form.scammer_account}`}
+          </p>
+          <button type="button" className="link" onClick={onBack}>
+            {t('editDetails')}
+          </button>
+        </section>
+      )}
+
       {loading && <p className="status">{t('loadingRegistry')}</p>}
       {error && <p className="status error">{t('registryError', { msg: error })}</p>}
 
@@ -60,14 +77,17 @@ export default function InstitutionPicker({ onContinue }) {
               {items.map((i) => (
                 <button
                   key={i.id}
-                  className={selected.includes(i.id) ? 'card selected' : 'card'}
-                  onClick={() => toggle(i.id)}
-                  aria-pressed={selected.includes(i.id)}
+                  className={selected.includes(i.slug) ? 'card selected' : 'card'}
+                  onClick={() => toggle(i.slug)}
+                  aria-pressed={selected.includes(i.slug)}
                 >
                   <span className="card-avatar" aria-hidden="true">
                     {BADGE[i.slug] || i.name.slice(0, 1)}
                   </span>
-                  <span className="card-name">{i.name}</span>
+                  <span className="card-name">
+                    {i.name}
+                    {detected.includes(i.slug) && <span className="detected-chip">{t('detected')}</span>}
+                  </span>
                   {i.hotline && <span className="card-meta">{i.hotline}</span>}
                 </button>
               ))}
@@ -81,14 +101,14 @@ export default function InstitutionPicker({ onContinue }) {
           <span>
             <strong>{t('selected')}</strong>{' '}
             {institutions
-              .filter((i) => selected.includes(i.id))
+              .filter((i) => selected.includes(i.slug))
               .map((i) => i.name)
               .join(', ') || t('noneYet')}
           </span>
           <button
             className="primary"
             disabled={!selected.length}
-            onClick={() => onContinue(institutions.filter((i) => selected.includes(i.id)))}
+            onClick={() => onContinue(institutions.filter((i) => selected.includes(i.slug)))}
           >
             {t('continue')}
           </button>

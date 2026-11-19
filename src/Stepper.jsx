@@ -1,12 +1,15 @@
+import { useI18n } from './lib/i18n'
+
 // Where the victim is in the flow ("step 2 of 3"), like a checkout or delivery tracker.
 // Keys match the `stage` values in App.jsx; reorder or add screens by editing FLOW only.
 export const FLOW = [
-  { stage: 'pick', label: 'Where it went' },
-  { stage: 'intake', label: 'What happened' },
-  { stage: 'plan', label: 'Action plan' },
+  { stage: 'intake', labelKey: 'flow.intake' },
+  { stage: 'pick', labelKey: 'flow.pick' },
+  { stage: 'plan', labelKey: 'flow.plan' },
 ]
 
 export default function Stepper({ stage }) {
+  const { t } = useI18n()
   const current = FLOW.findIndex((s) => s.stage === stage)
   if (current === -1) return null
 
@@ -20,7 +23,7 @@ export default function Stepper({ stage }) {
               <span className="stepper-dot" aria-hidden="true">
                 {state === 'done' ? '✓' : i + 1}
               </span>
-              <span className="stepper-label">{s.label}</span>
+              <span className="stepper-label">{t(s.labelKey)}</span>
             </li>
           )
         })}

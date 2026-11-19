@@ -112,6 +112,9 @@ export const dict = {
     'step.emailNoAddr': 'Draft email to {name} (add their address)',
 
     'call997': 'Call NSRC 997 now',
+    'flow.intake': 'What happened',
+    'flow.pick': 'Who to contact',
+    'flow.plan': 'Action plan',
     'privacyNote': 'Nothing is stored — your story stays on this device.',
     'intakeSubSolo': 'Type it or speak it, like you would tell a friend. AI fills in the details and detects who to contact.',
     'analyzeCta': 'Analyse my case',
@@ -258,6 +261,9 @@ export const dict = {
     'step.emailNoAddr': 'Draf e-mel kepada {name} (tambah alamat mereka)',
 
     'call997': 'Hubungi NSRC 997 sekarang',
+    'flow.intake': 'Apa yang berlaku',
+    'flow.pick': 'Siapa dihubungi',
+    'flow.plan': 'Pelan tindakan',
     'privacyNote': 'Tiada apa-apa disimpan — cerita anda kekal di peranti ini.',
     'intakeSubSolo': 'Taip atau bercakap, seperti bercerita kepada kawan. AI akan mengisi butiran dan mengesan siapa perlu dihubungi.',
     'analyzeCta': 'Analisis kes saya',

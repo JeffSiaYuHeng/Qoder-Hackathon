@@ -1,5 +1,5 @@
-// ?demo=1 forces every live step onto canned/registry fallbacks (PRD §9 resilience).
-export const DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === '1'
+// ?demo (any value) forces every live step onto canned/registry fallbacks (PRD §9 resilience).
+export const DEMO_MODE = new URLSearchParams(window.location.search).has('demo')
 
 export const CANNED_STORY =
   'A caller pretending to be from a parcel courier contacted me on WhatsApp and said I owed a delivery fee. ' +
