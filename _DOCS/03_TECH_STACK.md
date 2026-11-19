@@ -20,6 +20,10 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 
 ```
 .
+├── api/
+│   └── stt.js            # Vercel function: speech-to-text
+├── server/
+│   └── stt.js            # shared Gemini transcription core (dev + prod)
 ├── db/
 │   ├── schema.sql        # tables (apply via Supabase SQL editor or Management API)
 │   └── seed.sql          # verified fallback contacts
@@ -30,11 +34,13 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 │   ├── AuthScreen.jsx    # email/password sign-in (demo account hardcoded)
 │   ├── InstitutionPicker.jsx
 │   ├── IntakeForm.jsx
+│   ├── VoiceDialog.jsx     # hold-to-talk mic dialog (pulse + bars animation)
 │   ├── ActionPlan.jsx    # checklist, script, print report, mailto drafts
 │   ├── index.css         # Tailwind entry, theme tokens, report + print CSS
 │   └── lib/
 │       ├── supabase.js   # single client export
 │       ├── i18n.js       # EN/BM dictionary + useI18n
+│       ├── stt.js        # mic recording → 16 kHz WAV → /api/stt
 │       └── plan.js       # rule-based plan builder
 ├── .env.local            # real keys, never committed
 ├── .env.example
@@ -48,9 +54,13 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 ```bash
 VITE_SUPABASE_URL=https://cxmzutazrqrykpnjgqnd.supabase.co
 VITE_SUPABASE_ANON_KEY=<legacy anon key>
+
+# server-only — not exposed to the browser
+AI_STUDIO_API=<Google AI Studio API key>
+AI_STUDIO_MODEL=gemini-3.8-flash   # optional; this is the default
 ```
 
-Vite only exposes `VITE_*` vars to the browser. The anon/publishable key is public by design; never put the `service_role`/`sb_secret_*` key in the frontend.
+Vite only exposes `VITE_*` vars to the browser. The anon/publishable key is public by design; never put the `service_role`/`sb_secret_*` key in the frontend. `AI_STUDIO_API` must stay server-side — do **not** prefix it with `VITE_`.
 
 ## Commands
 
@@ -63,9 +73,9 @@ vercel deploy        # preview deploy
 
 ## User flow
 
-1. **Sign in** — Supabase Auth (email/password). "Use demo account" signs in with one click.
+1. **Sign in or continue as guest** — Supabase Auth email/password, "Use demo account" for one click, or "Continue as guest" to file without an account. Guest state persists in `sessionStorage` (`scamsos.guest`).
 2. **Pick institutions** — banks / e-wallets / platforms (multi-select, loaded from `institutions`).
-3. **Intake** — free-text story + amount, time, contact method, suspect details.
+3. **Intake** — type the story or record it; the voice button transcribes through `/api/stt` (Google AI Studio). Plus amount, time, contact method, suspect details.
 4. **Action plan** — rule-based builder (`src/lib/plan.js`) writes `incidents`, `incident_institutions` and `action_steps`; the screen renders `tel:` / web / map buttons, a call script, email drafts and a printable police report.
 5. Step checkboxes persist `action_steps.done`.
 
@@ -76,9 +86,19 @@ vercel deploy        # preview deploy
 - The toggle is in the topbar (auth screen included). Dates use `en-MY` / `ms-MY`.
 - Plan generation is localized at build time: step titles, call script and `mailto:` drafts are generated in the active language and stored that way.
 
+## Speech-to-text (Google AI Studio)
+
+- Intake has a "Speak instead of typing" button that opens `VoiceDialog.jsx`: **hold** the mic button to record, **release** to transcribe. While held, the mic pulses and equalizer bars animate; a spinner shows during transcription. The transcript appends straight into the story box and the dialog offers Record again / Done. Recordings auto-stop at 60 s; Escape/backdrop closes and cancels.
+- `src/lib/stt.js`: `MediaRecorder` → `decodeAudioData` → `OfflineAudioContext` resample to **16 kHz mono** → 16-bit WAV → base64 → `POST /api/stt`.
+- `server/stt.js` calls Gemini `:generateContent` with `inline_data` audio. Model defaults to **`gemini-3.8-flash`**; override with `AI_STUDIO_MODEL`.
+- `api/stt.js` serves it on Vercel; `vite.config.js` mounts the same core in dev, so `npm run dev` is enough (no `vercel dev`).
+- Key: `AI_STUDIO_API` in `.env.local`, server-side only. The client bundle never sees it.
+- Verified end to end in the browser with a fake mic stream fed a 16 kHz speech WAV: hold → live animation → release → transcript appended to the form. A real microphone still needs one manual check (permission prompt).
+
 ## Auth
 
-- Supabase Auth email/password; `incidents.user_id` references `auth.users`.
+- Supabase Auth email/password; `incidents.user_id` references `auth.users` (nullable).
+- **Guest mode** — "Continue as guest" on the auth screen starts the same flow with no session and no profile; incidents save with `user_id = null`. The flag lives in `sessionStorage` and is cleared on sign-in. The topbar shows a `Guest` badge and a "Sign in" link back to the auth screen.
 - Demo credential (created via admin API, email confirmed): **demo@scamsos.my / ScamSOS2026!**
 - HACK: the demo credential is hardcoded in `src/AuthScreen.jsx` so the on-stage login is one click.
 

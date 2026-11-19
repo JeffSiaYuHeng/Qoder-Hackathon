@@ -43,7 +43,7 @@ One incident in, one source of truth, many actions out:
 - A public scammer database (defamation and false-report risk).
 - Promising that money will be frozen or recovered.
 - Filing the police report for the user. They lodge it themselves; we prepare the document.
-- User accounts, case tracking, multiple languages in the UI, a native app.
+- User accounts as a requirement — guest mode must work without one. Case tracking, multiple languages in the UI, a native app.
 
 ## 4. Users
 
@@ -73,13 +73,14 @@ Priority: **P0** = must work on stage · **P1** = build if time allows · **P2**
 ### F1. Home (P0)
 - A big "I've been scammed. Help me now" button.
 - A secondary **Call NSRC 997** button (`tel:997`), always reachable without going through the flow.
+- **Guest mode (P0):** a "Continue as guest" action on the auth screen — no account, no profile; the incident is filed with `user_id = null`. Sign-in stays optional.
 - "Nothing is stored" privacy line (must be true; see §9).
 
-**Done when:** the user can call 997 with a single tap, without entering any data.
+**Done when:** the user can call 997 with a single tap, without entering any data, and can reach the institution picker as a guest without creating an account.
 
 ### F2. What happened: voice + text intake (P0)
-- **Voice input** with the browser's built-in speech-to-text (Web Speech API, `webkitSpeechRecognition`, `lang = 'en-MY'`, interim results shown live in the text box).
-- **Fallback:** if the browser doesn't support it (Firefox) or permission is denied, hide the mic button and type instead. **Demo fallback:** a pre-recorded transcript plays in with the same animation as the mockup.
+- **Voice input** via Google AI Studio (Gemini) speech-to-text: the browser records the mic, `POST /api/stt` transcribes it, and the transcript lands in the editable box. The API key stays server-side.
+- **Fallback:** the box is always typeable; if the mic or API fails, show the error inline and let the user continue. **Demo fallback:** a canned transcript can be pasted in.
 - The text box can always be edited.
 - Quick fields: payment method chips, amount, when.
 - "Analyse my case" → calls `POST /api/analyze`.
@@ -150,7 +151,7 @@ The tech stack is a Vite SPA. **The browser must never hold the LLM, search or e
 
 ```
 Browser (React + Vite)
-  ├─ Web Speech API (STT, on the device)
+  ├─ mic → /api/stt ──► Google AI Studio (Gemini) → transcript
   ├─ supabase-js (anon key) ──► Supabase: institutions (read-only)
   └─ fetch ──► Vercel functions (/api)
                  ├─ /api/analyze  → LLM: story → incident JSON
@@ -184,6 +185,8 @@ Browser (React + Vite)
 | Var | Where | Purpose |
 |---|---|---|
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Browser | Read the registry |
+| `AI_STUDIO_API` | Server only | Google AI Studio key for `/api/stt` |
+| `AI_STUDIO_MODEL` | Server only | Optional STT model override (default `gemini-3.8-flash`) |
 | `ANTHROPIC_API_KEY` (or chosen LLM provider's key) | Server only | `/api/analyze`, `/api/lookup` |
 | `RESEND_API_KEY` (or other email service) | Server only | `/api/send` |
 | `DEMO_MODE=true`, `DEMO_INBOX=<team inbox>` | Server only | Send all emails to our inbox instead of real institutions |
@@ -261,7 +264,7 @@ Seed for the demo: Maybank, CIMB, Public Bank, TNG eWallet, Shopee, Grab. **Ever
 | Time | Frontend (A) | Frontend (B) | Backend / AI (C) | Data + demo (D) |
 |---|---|---|---|---|
 | 0:00–0:15 | Vite scaffold, screen state machine | Port mockup CSS | `api/` setup, env vars on Vercel | Create `institutions` table, start checking numbers by hand |
-| 0:15–0:50 | Home + Intake + Web Speech | Analysis screen + picker (Supabase) | `/api/analyze` prompt + JSON schema | Finish registry seed, demo inbox |
+| 0:15–0:50 | Home + Intake + AI Studio STT | Analysis screen + picker (Supabase) | `/api/analyze` prompt + JSON schema | Finish registry seed, demo inbox |
 | 0:50–1:20 | Plan screen + `plan.js` rules | Reports screen + `reports.js` templates + print CSS | `/api/send` (email service, demo mode) | Write the canned fallbacks |
 | 1:20–1:45 | Wire lookup log streaming | Wire send statuses, mailto fallback | `/api/lookup` + domain allow-list + timeout | Deploy to Vercel, test on a phone |
 | 1:45–2:00 | **Freeze code.** Full run-through twice on the deployed URL, once with `?demo=1` | | | |

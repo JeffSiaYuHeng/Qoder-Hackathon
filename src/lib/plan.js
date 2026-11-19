@@ -63,29 +63,49 @@ export function buildActionPlan(form, institutions, t, locale) {
   })
 
   const subject = t('mail.subject', { amount, when: whenText })
-  const bodyLines = [
-    t('mail.intro'),
-    '',
+  const detailLines = [
     t('script.amount', { amount }),
     t('script.when', { when: whenText }),
     t('script.whatHappened', { summary: form.victim_summary }),
-    form.scammer_phone && t('script.phone', { phone: form.scammer_phone }),
-    form.scammer_account && t('script.account', { account: form.scammer_account }),
-    form.transaction_ref && t('script.ref', { ref: form.transaction_ref }),
-    '',
-    t('mail.freeze'),
-    t('mail.nsrc'),
-  ].filter(Boolean)
+    form.scammer_phone ? t('script.phone', { phone: form.scammer_phone }) : `${t('script.phone', { phone: '' })} ${t('toAdd')}`,
+    form.scammer_account ? t('script.account', { account: form.scammer_account }) : `${t('script.account', { account: '' })} ${t('toAdd')}`,
+    form.transaction_ref ? t('script.ref', { ref: form.transaction_ref }) : `${t('script.ref', { ref: '' })} ${t('toAdd')}`,
+  ]
 
-  for (const inst of institutions) {
-    if (inst.support_email) {
-      steps.push({
-        title: t('step.email', { name: inst.name, email: inst.support_email }),
-        action: 'email',
-        value: `mailto:${inst.support_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`,
-        urgency: 'soon',
-      })
+  // One report per institution; template fixed by type, narrative from the victim's story.
+  const reports = institutions.map((inst) => {
+    const requestKey =
+      inst.type === 'bank' ? 'mail.bankRequest' : inst.type === 'ewallet' ? 'mail.ewalletRequest' : 'mail.platformRequest'
+    const body = [
+      t('mail.intro'),
+      '',
+      ...detailLines,
+      '',
+      t(requestKey),
+      t('mail.nsrc'),
+      '',
+      t('mail.disclaimer'),
+    ].join('\n')
+    return {
+      slug: inst.slug,
+      name: inst.name,
+      type: inst.type,
+      to: inst.support_email || null,
+      subject: t('mail.subjectFor', { name: inst.name, amount }),
+      body,
+      mailto: `mailto:${inst.support_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
     }
+  })
+
+  for (const report of reports) {
+    steps.push({
+      title: report.to
+        ? t('step.email', { name: report.name, email: report.to })
+        : t('step.emailNoAddr', { name: report.name }),
+      action: 'email',
+      value: report.mailto,
+      urgency: 'soon',
+    })
   }
 
   const call_script = [
@@ -108,6 +128,7 @@ export function buildActionPlan(form, institutions, t, locale) {
   return {
     steps,
     call_script,
+    reports,
     summary: {
       amount: form.amount ? Number(form.amount) : null,
       when: whenText,

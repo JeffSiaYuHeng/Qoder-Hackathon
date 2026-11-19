@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScamSOS Mockup</title>
+<style>
+  :root {
+    --bg: #f3f1ee; --card: #ffffff; --ink: #1c1b1a; --muted: #6b6762; --line: #e4e0da;
+    --red: #d6332a; --red-soft: #fdecea; --green: #1f8a4c; --green-soft: #e6f4ec;
+    --amber: #b8730b; --amber-soft: #fdf3e1; --blue: #2457c5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; display: flex; gap: 32px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+  .side { flex: 1 1 260px; max-width: 320px; }
+  .side h1 { font-size: 22px; margin: 0 0 4px; }
+  .side p { color: var(--muted); margin: 0 0 16px; }
+  .flow { list-style: none; padding: 0; margin: 0; }
+  .flow li { padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; cursor: pointer; color: var(--muted); border: 1px solid transparent; }
+  .flow li b { color: var(--ink); display: block; font-size: 14px; }
+  .flow li.on { background: var(--card); border-color: var(--line); color: var(--ink); }
+  .flow li.on b { color: var(--red); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 16px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 10px; }
+
+  .phone { flex: 0 0 auto; width: 380px; max-width: 100%; height: 760px; background: var(--card); border-radius: 36px;
+    border: 10px solid #1c1b1a; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+  .bar { padding: 14px 18px 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-weight: 800; letter-spacing: -.3px; }
+  .logo span { color: var(--red); }
+  .timer { font-size: 12px; font-weight: 700; color: var(--red); background: var(--red-soft); padding: 4px 8px; border-radius: 99px; font-variant-numeric: tabular-nums; }
+  .steps { display: flex; gap: 4px; padding: 10px 18px 0; }
+  .steps i { flex: 1; height: 4px; border-radius: 4px; background: var(--line); }
+  .steps i.on { background: var(--red); }
+  .screen { flex: 1; overflow-y: auto; padding: 18px; display: none; }
+  .screen.on { display: block; }
+  h2 { font-size: 21px; margin: 4px 0 6px; letter-spacing: -.3px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+  .btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 14px; font: inherit; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; }
+  .btn.red { background: var(--red); color: #fff; }
+  .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+  .btn.sm { display: inline-block; width: auto; padding: 8px 12px; border-radius: 10px; font-size: 13px; }
+  .btn + .btn { margin-top: 8px; }
+  .card { border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+  textarea, input { width: 100%; font: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+  textarea { min-height: 130px; resize: vertical; }
+  label { font-size: 12px; font-weight: 600; color: var(--muted); display: block; margin: 12px 0 4px; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 6px 10px; border-radius: 99px; border: 1px solid var(--line); font-size: 13px; cursor: pointer; background: #fff; }
+  .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tag { font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: .3px; }
+  .tag.red { background: var(--red-soft); color: var(--red); }
+  .tag.green { background: var(--green-soft); color: var(--green); }
+  .tag.amber { background: var(--amber-soft); color: var(--amber); }
+  .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kv div small { display: block; color: var(--muted); font-size: 11px; }
+  .kv div strong { font-size: 15px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .inst { border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; position: relative; }
+  .inst .ic { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 13px; margin-bottom: 6px; }
+  .inst b { display: block; font-size: 14px; }
+  .inst small { color: var(--muted); font-size: 12px; }
+  .inst.on { border-color: var(--red); background: var(--red-soft); }
+  .inst.on::after { content: "✓"; position: absolute; top: 8px; right: 10px; color: var(--red); font-weight: 800; }
+  .task { display: flex; gap: 12px; align-items: flex-start; }
+  .num { flex: 0 0 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+  .task.done .num { background: var(--green); }
+  .task.done .t { text-decoration: line-through; color: var(--muted); }
+  .t { font-weight: 700; }
+  .d { font-size: 13px; color: var(--muted); margin: 2px 0 8px; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .agent { font: 12px/1.6 ui-monospace, Menlo, monospace; background: #1c1b1a; color: #d9d6d0; border-radius: 10px; padding: 10px; margin: 6px 0 8px; min-height: 20px; }
+  .agent .ok { color: #6fd39b; }
+  details { font-size: 13px; margin-top: 8px; }
+  summary { cursor: pointer; font-weight: 600; color: var(--blue); }
+  .script { background: var(--bg); border-radius: 10px; padding: 10px; margin-top: 6px; }
+  .doc { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; }
+  .doc b { display: block; font-size: 14px; }
+  .doc small { color: var(--muted); font-size: 12px; }
+  .paper { border: 1px solid var(--line); border-radius: 10px; padding: 16px; font-size: 13px; background: #fffdf9; }
+  .paper h3 { margin: 0 0 2px; font-size: 15px; }
+  .paper table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .paper td { border-top: 1px solid var(--line); padding: 5px 0; vertical-align: top; }
+  .paper td:first-child { color: var(--muted); width: 42%; }
+  .missing { background: var(--amber-soft); color: var(--amber); padding: 0 4px; border-radius: 4px; font-weight: 600; }
+  .fine { font-size: 11px; color: var(--muted); text-align: center; margin-top: 12px; }
+  .center { text-align: center; }
+  .mic { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line); cursor: pointer; margin-bottom: 10px; background: #fff; }
+  .mic .dot { flex: 0 0 44px; height: 44px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-size: 20px; }
+  .mic b { display: block; font-size: 14px; }
+  .mic small { color: var(--muted); font-size: 12px; }
+  .mic.live { border-color: var(--red); background: var(--red-soft); }
+  .mic.live .dot { animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(214,51,42,.5); } 50% { box-shadow: 0 0 0 10px rgba(214,51,42,0); } }
+  .wave { display: none; gap: 3px; align-items: center; height: 24px; margin-left: auto; }
+  .mic.live .wave { display: flex; }
+  .wave i { width: 3px; background: var(--red); border-radius: 2px; animation: wv .8s ease-in-out infinite; }
+  .wave i:nth-child(2) { animation-delay: .1s } .wave i:nth-child(3) { animation-delay: .2s } .wave i:nth-child(4) { animation-delay: .3s } .wave i:nth-child(5) { animation-delay: .4s }
+  @keyframes wv { 0%,100% { height: 4px } 50% { height: 22px } }
+  .found { margin: 6px 0 0; font-size: 13px; }
+  .found div { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); }
+  .found span:first-child { color: var(--muted); }
+  .lk { border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-bottom: 8px; }
+  .spinner { width: 42px; height: 42px; border-radius: 50%; border: 4px solid var(--line); border-top-color: var(--red); animation: spin 1s linear infinite; margin: 60px auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hero { font-size: 30px; line-height: 1.15; letter-spacing: -.6px; margin: 40px 0 10px; }
+  .hero em { color: var(--red); font-style: normal; }
+
+  @media (max-width: 720px) { .side { max-width: none; } .phone { height: auto; min-height: 700px; border-width: 6px; border-radius: 24px; } }
+  @media print {
+    body * { visibility: hidden; }
+    #docView, #docView * { visibility: visible; }
+    #docView { position: absolute; left: 0; top: 0; width: 100%; border: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="side">
+    <h1>ScamSOS: clickable mockup</h1>
+    <p>Hackathon demo flow. Click through on the phone, or jump to a step.</p>
+    <ol class="flow" id="flow">
+      <li data-go="0"><b>1. Panic button</b>One tap to start</li>
+      <li data-go="1"><b>2. Tell us what happened</b>Free text + 3 quick fields</li>
+      <li data-go="3"><b>3. AI analysis + who to contact</b>Detected details, institution picker</li>
+      <li data-go="4"><b>4. Action plan</b>Ordered checklist, call buttons, live agent lookup</li>
+      <li data-go="5"><b>5. Reports</b>One incident → police + bank + platform drafts</li>
+    </ol>
+    <div class="note">Mock data only. Bank numbers and URLs are placeholders; the real build reads them from a hand-checked registry. NSRC 997 is Malaysia's national scam hotline.</div>
+  </aside>
+
+  <div class="phone">
+    <div class="bar">
+      <div class="logo">Scam<span>SOS</span></div>
+      <div class="timer" id="timer" hidden>⏱ 59:59 golden hour</div>
+    </div>
+    <div class="steps" id="steps"><i></i><i></i><i></i><i></i><i></i></div>
+
+    <!-- 0: Home -->
+    <section class="screen" data-s="0">
+      <div class="hero">Just got scammed?<br><em>The next hour matters.</em></div>
+      <p class="sub">We'll tell you who to call first, open the right official pages, and write your reports for you.</p>
+      <button class="btn red" onclick="go(1)">I've been scammed. Help me now</button>
+      <a class="btn ghost" href="tel:997">Call NSRC 997 right away</a>
+      <p class="fine">Nothing is stored. Your report is generated on your device.</p>
+    </section>
+
+    <!-- 1: Intake -->
+    <section class="screen" data-s="1">
+      <h2>What happened?</h2>
+      <p class="sub">Say it or type it, in English or Bahasa. We'll pull out the details.</p>
+      <div class="mic" id="mic" onclick="toggleMic()">
+        <div class="dot">🎙</div>
+        <div><b id="micTitle">Tap and just talk</b><small id="micSub">Too shaken to type? Tell us what happened.</small></div>
+        <div class="wave"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <textarea id="story">A "J&T courier" messaged me on WhatsApp saying my parcel was stuck in customs. I paid through a Shopee link, then they asked me to transfer RM4,800 from my Maybank account to clear it. Account name ABC Logistik, acc no 5123 4567 8901.</textarea>
+      <label>How did they pay / get paid?</label>
+      <div class="chips" id="chips">
+        <span class="chip on">Bank transfer</span><span class="chip">E-wallet</span><span class="chip on">Online shopping</span><span class="chip">Card</span>
+      </div>
+      <div class="row">
+        <div><label>Amount (RM)</label><input value="4,800"></div>
+        <div><label>When</label><input value="Today, 2:15 PM"></div>
+      </div>
+      <div style="height:16px"></div>
+      <button class="btn red" onclick="analyse()">Analyse my case</button>
+    </section>
+
+    <!-- 2: Loading -->
+    <section class="screen" data-s="2">
+      <div class="spinner"></div>
+      <p class="center"><b>Reading your story…</b></p>
+      <p class="center sub" id="loadMsg">Extracting amount, accounts and contacts</p>
+    </section>
+
+    <!-- 3: Analysis + institution picker -->
+    <section class="screen" data-s="3">
+      <h2>Here's what we found</h2>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <b>Parcel / courier scam</b><span class="tag red">Critical</span>
+        </div>
+        <div class="kv">
+          <div><small>Amount lost</small><strong>RM 4,800</strong></div>
+          <div><small>Contacted via</small><strong>WhatsApp</strong></div>
+          <div><small>Scammer account</small><strong>5123 4567 8901</strong></div>
+          <div><small>Transaction ID</small><strong><span class="missing">To add</span></strong></div>
+        </div>
+      </div>
+      <h2 style="font-size:17px;margin-top:16px">Who's involved?</h2>
+      <p class="sub">We pre-selected what we detected. Add any others.</p>
+      <div class="grid" id="insts">
+        <div class="inst on" data-i="maybank"><div class="ic" style="background:#e5a800">M</div><b>Maybank</b><small>Detected · your bank</small></div>
+        <div class="inst on" data-i="shopee"><div class="ic" style="background:#ee4d2d">S</div><b>Shopee</b><small>Detected · platform</small></div>
+        <div class="inst" data-i="tng"><div class="ic" style="background:#0a5ebd">T</div><b>TNG eWallet</b><small>E-wallet</small></div>
+        <div class="inst" data-i="cimb"><div class="ic" style="background:#9e1b20">C</div><b>CIMB</b><small>Bank</small></div>
+        <div class="inst" data-i="pbb"><div class="ic" style="background:#c8102e">P</div><b>Public Bank</b><small>Bank</small></div>
+        <div class="inst" data-i="grab"><div class="ic" style="background:#00a35c">G</div><b>Grab / GrabPay</b><small>E-wallet</small></div>
+      </div>
+      <div style="height:14px"></div>
+      <button class="btn red" onclick="go(4)">Show my action plan</button>
+    </section>
+
+    <!-- 4: Action plan -->
+    <section class="screen" data-s="4">
+      <h2>Do these in order</h2>
+      <p class="sub">Tick each one off. Calls come first: they're the only chance to freeze the money.</p>
+
+      <div class="card task" id="t1">
+        <div class="num">1</div>
+        <div style="flex:1">
+          <div class="t">Call Maybank's fraud line</div>
+          <div class="d">Ask them to freeze the transfer to account 5123 4567 8901. <span class="tag green">Verified registry</span></div>
+          <div class="acts"><a class="btn red sm" href="#" onclick="return done('t1')">📞 Call Maybank</a></div>
+          <details><summary>What to say</summary><div class="script">"Hi, I'm a Maybank customer. I was scammed and transferred <b>RM4,800</b> today at <b>2:15 PM</b> to account <b>5123 4567 8901</b> (ABC Logistik). Please freeze or recall the transaction and give me a case reference number."</div></details>
+        </div>
+      </div>
+
+      <div class="card task" id="t2">
+        <div class="num">2</div>
+        <div style="flex:1">
+          <div class="t">Call NSRC 997</div>
+          <div class="d">National Scam Response Centre, which coordinates with banks to trace the money.</div>
+          <div class="acts"><a class="btn red sm" href="tel:997" onclick="done('t2')">📞 Call 997</a></div>
+        </div>
+      </div>
+
+      <div class="card task" id="t3">
+        <div class="num">3</div>
+        <div style="flex:1">
+          <div class="t">Find each official fraud channel</div>
+          <div class="d">Our agent searches live, accepts only official domains, and checks against our registry.</div>
+          <div class="agent" id="agentLog">▶ Agent ready</div>
+          <div id="lookups"></div>
+          <div class="acts"><button class="btn red sm" id="agentBtn" onclick="runAgent()">🔎 Run live agent lookup</button></div>
+        </div>
+      </div>
+
+      <div class="card task" id="t4">
+        <div class="num">4</div>
+        <div style="flex:1">
+          <div class="t">Make a police report</div>
+          <div class="d">Nearest station: Balai Polis (mock), 1.2 km away. Bring the report from the next screen.</div>
+          <div class="acts"><a class="btn ghost sm" href="#" onclick="return done('t4')">🗺 Directions</a></div>
+        </div>
+      </div>
+
+      <div class="card task" id="t5">
+        <div class="num">5</div>
+        <div style="flex:1">
+          <div class="t">Report to Shopee</div>
+          <div class="d">Report the fake link / seller so it can be taken down.</div>
+          <div class="acts"><a class="btn ghost sm" href="#" onclick="go(5);return false">✉ Use the drafted email</a></div>
+        </div>
+      </div>
+
+      <button class="btn red" onclick="go(5)">Generate my reports</button>
+    </section>
+
+    <!-- 5: Reports -->
+    <section class="screen" data-s="5">
+      <h2>Your reports are ready</h2>
+      <p class="sub">One incident, a report for each place you need to report to. Tap one to review it.</p>
+      <div class="card" style="background:var(--bg);border:0">
+        <label style="margin-top:0">Your email (replies come here, and you're CC'd)</label>
+        <input id="myEmail" value="ahmad@example.com">
+        <div style="height:10px"></div>
+        <button class="btn red" id="sendAllBtn" onclick="sendAll()">✉ Send all reports in one click</button>
+        <div class="fine" id="sendNote" style="margin-top:6px"></div>
+      </div>
+      <div id="docList"></div>
+      <div class="paper" id="docView"></div>
+      <div style="height:10px"></div>
+      <div class="row">
+        <button class="btn ghost" onclick="window.print()">🖨 Print / PDF</button>
+        <a class="btn ghost" id="mailBtn" href="#">Open in my email app</a>
+      </div>
+      <p class="fine">Reports are sent to official addresses from our checked registry, with you in CC. The police report can't be emailed: print it and bring it to the station. Recovery isn't guaranteed.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+  let cur = 0, timerStarted = false;
+  const screens = document.querySelectorAll('.screen');
+  const stepOf = [0, 1, 2, 2, 3, 4];
+
+  function go(n) {
+    cur = n;
+    screens.forEach(s => s.classList.toggle('on', +s.dataset.s === n));
+    document.querySelectorAll('#steps i').forEach((b, i) => b.classList.toggle('on', i <= stepOf[n]));
+    document.querySelectorAll('#flow li').forEach(li => li.classList.toggle('on', stepOf[+li.dataset.go] === stepOf[n]));
+    if (n >= 1 && !timerStarted) startTimer();
+    if (n === 5) renderDocs();
+    document.querySelector('.screen.on').scrollTop = 0;
+  }
+
+  function startTimer() {
+    timerStarted = true;
+    const el = document.getElementById('timer'); el.hidden = false;
+    let s = 59 * 60 + 59;
+    setInterval(() => { s = Math.max(0, s - 1);
+      el.textContent = '⏱ ' + String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0') + ' golden hour'; }, 1000);
+  }
+
+  function analyse() {
+    go(2);
+    const msgs = ['Extracting amount, accounts and contacts', 'Identifying banks and platforms involved', 'Checking what details are missing'];
+    let i = 0; const m = document.getElementById('loadMsg');
+    const iv = setInterval(() => { i++; if (i < msgs.length) m.textContent = msgs[i]; }, 600);
+    setTimeout(() => { clearInterval(iv); go(3); }, 1900);
+  }
+
+  document.getElementById('chips').addEventListener('click', e => { if (e.target.classList.contains('chip')) e.target.classList.toggle('on'); });
+  document.getElementById('insts').addEventListener('click', e => { const c = e.target.closest('.inst'); if (c) c.classList.toggle('on'); });
+  document.getElementById('flow').addEventListener('click', e => { const li = e.target.closest('li'); if (li) go(+li.dataset.go); });
+
+  function done(id) { document.getElementById(id).classList.add('done'); return false; }
+
+  // ---- Mock voice input (STT) ----
+  const SPOKEN = 'A J&T courier messaged me on WhatsApp saying my parcel was stuck in customs. I paid through a Shopee link, then they told me to transfer RM4,800 from my Maybank account to clear it. The account name was ABC Logistik, account number 5123 4567 8901.';
+  let micTimer = null;
+  function toggleMic() {
+    const mic = document.getElementById('mic'), ta = document.getElementById('story');
+    if (micTimer) return stopMic();
+    mic.classList.add('live');
+    document.getElementById('micTitle').textContent = 'Listening…';
+    document.getElementById('micSub').textContent = 'Tap again to stop';
+    ta.value = '';
+    const words = SPOKEN.split(' '); let i = 0;
+    micTimer = setInterval(() => {
+      ta.value += (i ? ' ' : '') + words[i++];
+      ta.scrollTop = ta.scrollHeight;
+      if (i >= words.length) stopMic();
+    }, 110);
+  }
+  function stopMic() {
+    clearInterval(micTimer); micTimer = null;
+    document.getElementById('mic').classList.remove('live');
+    document.getElementById('micTitle').textContent = '✓ Got it. Tap to re-record';
+    document.getElementById('micSub').textContent = 'Check the text below and fix anything we misheard.';
+  }
+
+  // ---- Mock live agent lookup, one per selected institution ----
+  const official = { maybank: 'maybank2u.com.my', shopee: 'shopee.com.my', tng: 'tngdigital.com.my', cimb: 'cimb.com.my', pbb: 'pbebank.com', grab: 'grab.com' };
+  function runAgent() {
+    const log = document.getElementById('agentLog'), out = document.getElementById('lookups');
+    document.getElementById('agentBtn').hidden = true;
+    log.innerHTML = ''; out.innerHTML = '';
+    const ids = selected(); let t = 0;
+    const line = (html, delay) => setTimeout(() => { log.innerHTML += (log.innerHTML ? '<br>' : '') + html; log.scrollTop = log.scrollHeight; }, t += delay);
+    ids.forEach(id => {
+      line(`▶ Searching "${names[id]} report scam"…`, 450);
+      line(`  ✗ ${id}-help-centre.xyz  (not official, skipped)`, 500);
+      line(`  ✓ ${official[id]}  (official domain)`, 450);
+      line(`  ↔ matches registry, checked just now`, 400);
+      setTimeout(() => {
+        out.innerHTML += `<div class="lk"><b>${names[id]}</b> <span class="tag green">Verified</span>
+          <div class="found">
+            <div><span>Fraud hotline</span><a href="#">03-XXXX XXXX 📞</a></div>
+            <div><span>Fraud report page</span><a href="#">${official[id]}/… ↗</a></div>
+            <div><span>Complaint email</span><span>${emails[id]}</span></div>
+          </div></div>`;
+      }, t += 200);
+    });
+    line('<span class="ok">✓ ' + ids.length + ' institutions resolved · 0 unverified links shown</span>', 300);
+    setTimeout(() => done('t3'), t);
+  }
+
+  const selected = () => [...document.querySelectorAll('.inst.on')].map(x => x.dataset.i);
+  const names = { maybank: 'Maybank', shopee: 'Shopee', tng: 'TNG eWallet', cimb: 'CIMB', pbb: 'Public Bank', grab: 'Grab / GrabPay' };
+  const kind = { maybank: 'bank', cimb: 'bank', pbb: 'bank', tng: 'wallet', grab: 'wallet', shopee: 'platform' };
+
+  function docsFor() {
+    const d = [{ id: 'police', title: 'Police incident report', sub: 'Full timeline, amount, scammer details, evidence list' }];
+    selected().forEach(i => d.push({ id: i, title: names[i] + ': ' + (kind[i] === 'platform' ? 'platform complaint' : 'fraud complaint'),
+      sub: kind[i] === 'bank' ? 'Asks for an urgent freeze / recall of the transfer' : kind[i] === 'wallet' ? 'Asks them to investigate the transaction and the receiving account' : 'Reports the fake link / seller and the order' }));
+    return d;
+  }
+
+  // Mock registry addresses (.example = placeholder; real build uses hand-checked official addresses)
+  const emails = { maybank: 'fraud@maybank.example', shopee: 'support@shopee.example', tng: 'fraud@tngdigital.example',
+    cimb: 'fraud@cimb.example', pbb: 'fraud@publicbank.example', grab: 'support@grab.example' };
+  const status = {};  // id -> 'sending' | 'sent'
+
+  function tagFor(id) {
+    if (id === 'police') return '<span class="tag amber">Print & bring</span>';
+    if (status[id] === 'sending') return '<span class="tag amber">Sending…</span>';
+    if (status[id] === 'sent') return '<span class="tag green">Sent ✓</span>';
+    return '<span class="tag green">Ready</span>';
+  }
+
+  function sendAll() {
+    const ids = selected();
+    const me = document.getElementById('myEmail').value;
+    const btn = document.getElementById('sendAllBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    ids.forEach((id, i) => {
+      setTimeout(() => { status[id] = 'sending'; renderDocs(); }, 400 * i);
+      setTimeout(() => { status[id] = 'sent'; renderDocs(); }, 400 * i + 700);
+    });
+    setTimeout(() => {
+      btn.textContent = '✓ Sent to ' + ids.length + ' institution' + (ids.length > 1 ? 's' : '');
+      btn.style.background = 'var(--green)';
+      document.getElementById('sendNote').textContent = 'Copies sent to ' + me + '. Save the reference numbers they reply with.';
+    }, 400 * ids.length + 800);
+  }
+
+  let activeDoc = 'police';
+  function renderDocs() {
+    const list = document.getElementById('docList');
+    list.innerHTML = docsFor().map(d => `<div class="card doc" data-d="${d.id}" style="${d.id === activeDoc ? 'border-color:var(--red)' : ''}">
+      <div><b>${d.title}</b><small>${d.id === 'police' ? 'Lodge at a police station' : 'To: ' + emails[d.id]}</small></div>${tagFor(d.id)}</div>`).join('');
+    list.querySelectorAll('.doc').forEach(el => el.onclick = () => { activeDoc = el.dataset.d; renderDocs(); });
+    if (!docsFor().some(d => d.id === activeDoc)) activeDoc = 'police';
+    showDoc(activeDoc);
+  }
+
+  const MISSING = '<span class="missing">[to add]</span>';
+  function showDoc(id) {
+    const base = `<table>
+      <tr><td>Date / time</td><td>19 Nov 2026, 2:15 PM</td></tr>
+      <tr><td>Amount</td><td>RM 4,800.00</td></tr>
+      <tr><td>Scammer account</td><td>5123 4567 8901 (ABC Logistik)</td></tr>
+      <tr><td>Transaction ID</td><td>${MISSING}</td></tr>
+      <tr><td>First contact</td><td>WhatsApp, posing as J&amp;T courier</td></tr></table>`;
+    let h;
+    if (id === 'police') {
+      h = `<h3>Police Incident Report (draft)</h3><small>Case ref: SC-2026-001 · prepared by victim</small>${base}
+        <b>Timeline</b><ol style="margin:4px 0 8px;padding-left:18px">
+        <li>1:40 PM: WhatsApp message from "J&amp;T courier" about a parcel stuck in customs</li>
+        <li>1:55 PM: Paid via a Shopee link sent by the scammer</li>
+        <li>2:15 PM: Transferred RM4,800 from Maybank to 5123 4567 8901</li>
+        <li>2:30 PM: Realised it was a scam</li></ol>
+        <b>Evidence attached</b><br>☐ WhatsApp screenshots ☐ Transfer receipt ☐ Shopee link ${MISSING}`;
+    } else if (kind[id] === 'bank') {
+      h = `<h3>To: ${names[id]} fraud team</h3><small>Subject: URGENT: fraudulent transfer, request to freeze / recall</small>${base}
+        <p>I am an account holder and was the victim of a parcel scam. I request that you urgently freeze or recall the above transfer and give me a case reference number.</p><p>Account holder: Ahmad ${MISSING}<br>Phone: ${MISSING}</p>`;
+    } else if (kind[id] === 'wallet') {
+      h = `<h3>To: ${names[id]} support</h3><small>Subject: Scam report: please investigate the transaction and the receiving account</small>${base}
+        <p>Please investigate the transaction above and restrict the receiving account.</p>`;
+    } else {
+      h = `<h3>To: ${names[id]} support</h3><small>Subject: Report of a fake courier link / scam</small>${base}
+        <table><tr><td>Order ID</td><td>${MISSING}</td></tr><tr><td>Link / seller</td><td>${MISSING}</td></tr></table>
+        <p>A scammer used a Shopee payment link as part of a parcel scam. Please take down the listing or seller and preserve the records for the police.</p>`;
+    }
+    document.getElementById('docView').innerHTML = h;
+    const subj = encodeURIComponent('Scam report SC-2026-001: RM4,800 fraudulent transfer');
+    const body = encodeURIComponent(document.getElementById('docView').innerText);
+    document.getElementById('mailBtn').href = 'mailto:' + (emails[id] || '') + '?subject=' + subj + '&body=' + body;
+  }
+
+  go(0);
+</script>
+</body>
+</html>

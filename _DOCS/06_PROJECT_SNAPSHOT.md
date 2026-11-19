@@ -8,8 +8,8 @@
 | | |
 | --- | --- |
 | App | ScamSOS — React + Vite SPA backed by Supabase |
-| Latest commit | `ec6cb56` — Tailwind CSS v4 adopted; UI restyled with utilities |
-| Golden path | Sign in → pick institutions → intake → action plan → print |
+| Latest commit | `d339064` — placeholder design doc |
+| Golden path | Sign in **or continue as guest** → pick institutions → intake → action plan → print |
 | Build | `npm run build` configured; a `dist/` build exists |
 | Deploy | Not confirmed in-repo; `vercel deploy` is available |
 | Demo blockers recorded | None as of the latest commit |
@@ -17,8 +17,10 @@
 ## What works today
 
 - **Auth gate** — Supabase email/password; one-click demo account (hardcoded `HACK` in `src/AuthScreen.jsx`).
+- **Guest mode** — "Continue as guest" skips auth entirely; no profile, and incidents save with `user_id = null`. Flag persists in `sessionStorage` (`scamsos.guest`) and clears on sign-in; topbar shows a `Guest` badge plus a "Sign in" link.
 - **Institution picker** — reads the `institutions` registry from Supabase; multi-select across banks, e-wallets and platforms.
 - **Intake** — story, amount, time, contact method, suspect phone/account, transaction reference.
+- **Voice intake** — "Speak instead of typing" opens a hold-to-talk dialog (`VoiceDialog.jsx`): hold the mic to record (pulsing ring + equalizer bars), release to transcribe via `/api/stt` (Google AI Studio / Gemini); the transcript appends straight into the story box, with Record again / Done. Auto-stops at 60 s; Escape/backdrop cancels; the key stays server-side. `vite.config.js` mounts the same handler in dev.
 - **Action plan** — `src/lib/plan.js` builds ordered steps, a call script and `mailto:` drafts **client-side** (rule-based LLM stand-in), localized EN/BM.
 - **Persistence** — on submit, writes `incidents`, `incident_institutions`, `action_steps`; ticking a step updates `action_steps.done`.
 - **Outputs** — `tel:` / open / maps / email buttons, call script panel, printable police-ready report.
@@ -29,11 +31,12 @@
 
 - `POST /api/analyze`, `/api/lookup`, `/api/send` — no LLM, no live agent lookup, no server-side email sending.
 - One-click “send all reports” from a team inbox — email today is `mailto:` only.
-- `?demo=1` fallback switch, voice intake, screenshot OCR, case tracking.
+- `?demo=1` fallback switch, screenshot OCR, case tracking.
+- Voice input is implemented and the hold/release flow was verified in-browser with a fake mic stream (speech WAV → transcript appended to the form); a real microphone still needs one manual permission-prompt check.
 
 ## Known gaps / decisions
 
-1. **Privacy claim vs storage.** [04_PRD.md](04_PRD.md) §9 says incident data is never stored, but `src/App.jsx` writes full incidents to Supabase with RLS off. Fix the wording or the behavior before showing both on stage.
+1. **Privacy claim vs storage.** [04_PRD.md](04_PRD.md) §9 says incident data is never stored, but `src/App.jsx` writes full incidents to Supabase with RLS off. Guest mode only removes `user_id` — the story, amount and suspect details are still stored. Fix the wording or the behavior before showing both on stage.
 2. **PRD schema drift.** PRD §8 describes `institutions` with `kind`, `fraud_hotline`, `official_domains`, etc.; the live table uses `type`, `hotline`, `report_url`, `support_email`.
 3. **`reports` table is unused** — the printable report is client-rendered, not persisted as a report row.
 4. **`mockup.html` is linked from the PRD but missing** from the repo.
@@ -77,3 +80,6 @@ After any task that changes app behavior, schema, or scope:
 - **2026-11-19** — EN/BM i18n added (`src/lib/i18n.js`), committed (`298f219`).
 - **2026-11-19** — Created this snapshot; added the update rule to [AGENTS.md](../AGENTS.md). Note: at creation time teammates had an uncommitted Tailwind v4 restyle in flight (`package.json`, `vite.config.js`, `src/index.css`).
 - **2026-11-19** — Tailwind v4 restyle finished: all screens converted to utilities, report/print CSS kept hand-written, committed (`ec6cb56`).
+- **2026-11-19** — Guest mode added: "Continue as guest" on `AuthScreen`, `sessionStorage` flag in `App.jsx`, guest incidents save with `user_id = null`. Verified the guest golden path in the browser (INSERT succeeded) and deleted the test row. Docs updated; uncommitted at the time of writing.
+- **2026-11-19** — Voice intake added via Google AI Studio (Gemini): `src/lib/stt.js`, `server/stt.js`, `api/stt.js`, dev middleware in `vite.config.js`, mic UI in `IntakeForm.jsx`, EN/BM voice strings. Endpoint verified through the dev server; mic capture needs a manual browser check. Docs updated; uncommitted at the time of writing.
+- **2026-11-19** — Voice UI rebuilt as a hold-to-talk dialog (`src/VoiceDialog.jsx`): press-and-hold mic with pulse/equalizer animation, release-to-transcribe, spinner, transcript appended directly to the form, Record again / Done, Escape/backdrop cancel. Verified end to end in-browser with a fake mic stream; docs updated; uncommitted at the time of writing.

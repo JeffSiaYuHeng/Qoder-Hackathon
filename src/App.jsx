@@ -15,6 +15,7 @@ export default function App() {
   const [incident, setIncident] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const [guest, setGuest] = useState(() => sessionStorage.getItem('scamsos.guest') === '1')
   const [lang, setLang] = useState(() => localStorage.getItem('scamsos.lang') || 'en')
 
   const t = useMemo(() => makeT(lang), [lang])
@@ -28,9 +29,25 @@ export default function App() {
       setSession(data.session)
       setAuthReady(true)
     })
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s)
+      if (s) {
+        sessionStorage.removeItem('scamsos.guest')
+        setGuest(false)
+      }
+    })
     return () => sub.subscription.unsubscribe()
   }, [])
+
+  function startGuest() {
+    sessionStorage.setItem('scamsos.guest', '1')
+    setGuest(true)
+  }
+
+  function exitGuest() {
+    sessionStorage.removeItem('scamsos.guest')
+    setGuest(false)
+  }
 
   async function submitIntake(form) {
     setSaving(true)
@@ -40,7 +57,7 @@ export default function App() {
     const { data: created, error: insertError } = await supabase
       .from('incidents')
       .insert({
-        user_id: session.user.id,
+        user_id: session?.user?.id ?? null,
         victim_summary: form.victim_summary,
         amount: form.amount ? Number(form.amount) : null,
         occurred_at: form.occurred_at || null,
@@ -114,20 +131,28 @@ export default function App() {
     <LangContext.Provider value={{ lang, setLang, t }}>
       {!authReady && <main className="mx-auto max-w-[720px] px-5 pb-16 pt-8"><p className="mt-2.5 text-xs text-dim">Loading…</p></main>}
 
-      {authReady && !session && <AuthScreen />}
+      {authReady && !session && !guest && <AuthScreen onGuest={startGuest} />}
 
-      {authReady && session && (
+      {authReady && (session || guest) && (
         <main className="mx-auto max-w-[720px] px-5 pb-16 pt-8">
           <header className="no-print mb-10 flex items-center justify-between">
             <span className="font-bold tracking-wide text-brand">ScamSOS</span>
             <span className="flex items-center gap-3">
-              <span className="rounded-full border border-edge px-2.5 py-1 text-xs text-muted">{session.user.email}</span>
+              <span className="rounded-full border border-edge px-2.5 py-1 text-xs text-muted">
+                {session ? session.user.email : t('guestBadge')}
+              </span>
               <button className="link" onClick={() => setLang(lang === 'en' ? 'bm' : 'en')}>
                 {lang === 'en' ? 'BM' : 'EN'}
               </button>
-              <button className="link" onClick={() => supabase.auth.signOut()}>
-                {t('signOut')}
-              </button>
+              {session ? (
+                <button className="link" onClick={() => supabase.auth.signOut()}>
+                  {t('signOut')}
+                </button>
+              ) : (
+                <button className="link" onClick={exitGuest}>
+                  {t('signIn')}
+                </button>
+              )}
             </span>
           </header>
 

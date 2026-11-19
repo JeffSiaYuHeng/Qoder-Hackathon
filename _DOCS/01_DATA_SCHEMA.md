@@ -41,7 +41,7 @@ One victim incident.
 | Column | Type | Constraints / notes |
 | --- | --- | --- |
 | `id` | `uuid` | PK, `default gen_random_uuid()` |
-| `user_id` | `uuid` | FK → `auth.users.id` `on delete cascade`; set from the signed-in session |
+| `user_id` | `uuid` | FK → `auth.users.id` `on delete cascade`; **nullable** — set from the signed-in session, `null` for guest incidents |
 | `created_at` | `timestamptz` | `not null default now()` |
 | `status` | `text` | `not null default 'intake'`; `intake` `action` `reported` `closed`. The app inserts `action` |
 | `victim_summary` | `text` | Free-text story from the intake form |

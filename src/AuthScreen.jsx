@@ -5,7 +5,7 @@ import { useI18n } from './lib/i18n'
 // HACK: demo account hardcoded for the on-stage flow
 const DEMO = { email: 'demo@scamsos.my', password: 'ScamSOS2026!' }
 
-export default function AuthScreen() {
+export default function AuthScreen({ onGuest }) {
   const { lang, setLang, t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -65,6 +65,17 @@ export default function AuthScreen() {
           {t('useDemo')}
         </button>
         {error && <p className="mt-2.5 text-xs text-red-300">{error}</p>}
+
+        <div className="mt-8 border-t border-edge pt-6">
+          <button
+            className="w-full cursor-pointer rounded-[10px] border border-edge-strong bg-btn px-5 py-3 text-[15px] font-semibold text-ink hover:border-brand disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={onGuest}
+            disabled={busy}
+          >
+            {t('continueAsGuest')}
+          </button>
+          <p className="mt-2.5 text-xs text-dim">{t('guestNote')}</p>
+        </div>
       </div>
     </main>
   )

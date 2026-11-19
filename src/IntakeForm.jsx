@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useI18n } from './lib/i18n'
+import VoiceDialog from './VoiceDialog'
 
 const METHODS = ['call', 'whatsapp', 'sms', 'social', 'marketplace', 'other']
 
@@ -14,6 +15,14 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
     scammer_account: '',
     transaction_ref: '',
   })
+  const [voiceOpen, setVoiceOpen] = useState(false)
+
+  function addTranscript(text) {
+    setForm((f) => ({
+      ...f,
+      victim_summary: f.victim_summary.trim() ? `${f.victim_summary.trim()} ${text}` : text,
+    }))
+  }
 
   function set(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
@@ -44,6 +53,12 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
             autoFocus
           />
         </label>
+
+        <div className="mb-4">
+          <button type="button" className="action-btn" onClick={() => setVoiceOpen(true)}>
+            {t('voiceSpeak')}
+          </button>
+        </div>
 
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
           <label className="mb-3.5 flex flex-col gap-1.5 text-[13px] text-muted">
@@ -95,6 +110,8 @@ export default function IntakeForm({ institutions, saving, error, onBack, onSubm
         </div>
         {error && <p className="mt-2.5 text-xs text-red-300">{error}</p>}
       </form>
+
+      {voiceOpen && <VoiceDialog onClose={() => setVoiceOpen(false)} onTranscript={addTranscript} />}
     </div>
   )
 }
