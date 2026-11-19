@@ -30,7 +30,10 @@ This is a **2-hour hackathon project**. It exists to produce a working demo, fas
 List every CLI installed/useable for this project here. Add entries as you install them — agents should check this list before reaching for `npx`, `pipx`, `brew`, etc.
 
 <!-- Format: `name` — version/install — what it is used for -->
-- _(none yet)_
+- `node` / `npm` — Node 24 — app runtime and package manager
+- `gh` — installed — GitHub repo operations
+- `supabase` — v2.122.0 — DB queries and project management (auth via macOS keychain)
+- `vercel` — v59.20.0 — hosting/deploy
 
 ## Commands
 
@@ -38,9 +41,12 @@ Fill these in once the stack is chosen. Agents use these; do not guess alternati
 
 ```bash
 # install
-# dev / run
+npm install
+# dev / run → http://localhost:5173
+npm run dev
 # test (optional — only if tests already exist)
 # build
+npm run build
 ```
 
 ## Conventions
