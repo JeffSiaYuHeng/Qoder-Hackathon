@@ -3,6 +3,17 @@ import { supabase } from './lib/supabase'
 import { useI18n } from './lib/i18n'
 
 // Short names Malaysians already use, shown in a round badge like a banking app's bank list.
+// Official logos (from each institution's own site icon; Shopee from Simple Icons). Public Bank
+// only publishes a 16px icon, so it keeps the text badge rather than a blurry logo.
+const LOGOS = {
+  maybank: '/logos/maybank.png',
+  cimb: '/logos/cimb.png',
+  rhb: '/logos/rhb.png',
+  'hong-leong': '/logos/hong-leong.png',
+  'tng-ewallet': '/logos/tng-ewallet.png',
+  shopee: '/logos/shopee.svg',
+}
+
 const BADGE = {
   maybank: 'MBB',
   cimb: 'CIMB',
@@ -81,8 +92,8 @@ export default function InstitutionPicker({ initialSelected = [], detected = [],
                   onClick={() => toggle(i.slug)}
                   aria-pressed={selected.includes(i.slug)}
                 >
-                  <span className="card-avatar" aria-hidden="true">
-                    {BADGE[i.slug] || i.name.slice(0, 1)}
+                  <span className={LOGOS[i.slug] ? 'card-avatar has-logo' : 'card-avatar'} aria-hidden="true">
+                    {LOGOS[i.slug] ? <img src={LOGOS[i.slug]} alt="" /> : BADGE[i.slug] || i.name.slice(0, 1)}
                   </span>
                   <span className="card-name">
                     {i.name}

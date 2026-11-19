@@ -175,7 +175,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset, 
 
       <section className="panel no-print">
         <h2>{t('lookupCta')}</h2>
-        <button className="primary" onClick={runLookup} disabled={lookup.busy}>
+        <button className="primary icon-search" onClick={runLookup} disabled={lookup.busy}>
           {lookup.busy ? t('lookupRunning') : t('lookupCta')}
         </button>
         {lookup.error && <p className="status error">{t('lookupFailed', { msg: lookup.error })}</p>}
@@ -220,7 +220,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset, 
             />
           </label>
           <div className="footer-row">
-            <button className="primary" type="submit" disabled={send.busy || !send.email || !reports.length}>
+            <button className="primary icon-send" type="submit" disabled={send.busy || !send.email || !reports.length}>
               {send.busy ? t('sending') : t('sendAll')}
             </button>
           </div>
@@ -260,7 +260,7 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset, 
       </section>
 
       <div className="footer-row no-print">
-        <button className="primary" onClick={() => window.print()}>
+        <button className="primary icon-print" onClick={() => window.print()}>
           {t('printReport')}
         </button>
         <button className="action-btn" onClick={downloadPdf} disabled={pdf.busy}>
