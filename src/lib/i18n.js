@@ -52,6 +52,7 @@ export const dict = {
     'autofillError': 'Your words were added, but the other boxes could not be filled automatically. Please fill them in.',
 
     'planTitle': 'Your action plan',
+    'editInstitutions': 'Change institutions',
     'planSub': 'Do these in order, starting now. Reporting within 24 hours gives the best chance to freeze the money.',
     'incidentDetected': 'Incident detected',
     'amountUnknown': 'Amount unknown',
@@ -216,6 +217,7 @@ export const dict = {
     'autofillError': 'Kata-kata anda telah ditambah, tetapi kotak lain tidak dapat diisi secara automatik. Sila isi sendiri.',
 
     'planTitle': 'Pelan tindakan anda',
+    'editInstitutions': 'Tukar institusi',
     'planSub': 'Lakukan mengikut urutan, bermula sekarang. Laporan dalam masa 24 jam memberi peluang terbaik untuk membekukan wang anda.',
     'incidentDetected': 'Insiden dikesan',
     'amountUnknown': 'Jumlah tidak diketahui',

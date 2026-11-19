@@ -3,6 +3,7 @@ import { useI18n } from './lib/i18n'
 import { analyzeStory } from './lib/agent'
 import { DEMO_MODE, CANNED_STORY } from './lib/demo'
 import VoiceDialog from './VoiceDialog'
+import Dropdown from './Dropdown'
 
 const METHODS = ['call', 'whatsapp', 'sms', 'social', 'marketplace', 'other']
 
@@ -98,8 +99,29 @@ export default function IntakeForm({ initialForm, saving, error, onBack, onSubmi
         </label>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" className="action-btn voice-trigger" onClick={() => setVoiceOpen(true)}>
-            {t('voiceSpeak')}
+          <button
+            type="button"
+            className="voice-icon"
+            onClick={() => setVoiceOpen(true)}
+            aria-label={t('voiceSpeak')}
+            title={t('voiceSpeak')}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M5 11a7 7 0 0 0 14 0M12 18v3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
           {DEMO_MODE && (
             <button
@@ -136,14 +158,23 @@ export default function IntakeForm({ initialForm, saving, error, onBack, onSubmi
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label>
             {t('methodLabel')}
-            <select value={form.contact_method} onChange={set('contact_method')} className={aiFilled('contact_method')}>
-              <option value="">{t('methodSelect')}</option>
-              {METHODS.map((m) => (
-                <option key={m} value={m}>
-                  {t(`method.${m}`)}
-                </option>
-              ))}
-            </select>
+            <Dropdown
+              value={form.contact_method}
+              onChange={(value) => {
+                setForm((f) => ({ ...f, contact_method: value }))
+                setAutofill((a) =>
+                  a?.filled.includes('contact_method')
+                    ? { ...a, filled: a.filled.filter((k) => k !== 'contact_method') }
+                    : a,
+                )
+              }}
+              options={[
+                { value: '', label: t('methodSelect') },
+                ...METHODS.map((m) => ({ value: m, label: t(`method.${m}`) })),
+              ]}
+              label={t('methodLabel')}
+              className={aiFilled('contact_method')}
+            />
           </label>
           <label>
             {t('phoneLabel')}

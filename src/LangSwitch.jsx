@@ -1,4 +1,5 @@
 import { useI18n } from './lib/i18n'
+import Dropdown from './Dropdown'
 
 // Language picker: English, Bahasa Malaysia, Chinese (Simplified, as used in Malaysia).
 export const LANGS = [
@@ -7,20 +8,18 @@ export const LANGS = [
   ['zh', '中文'],
 ]
 
+const OPTIONS = LANGS.map(([value, label]) => ({ value, label }))
+
 export default function LangSwitch() {
   const { lang, setLang } = useI18n()
   return (
-    <select
+    <Dropdown
       className="lang-switch"
+      compact
       value={lang}
-      onChange={(e) => setLang(e.target.value)}
-      aria-label="Language / Bahasa / 语言"
-    >
-      {LANGS.map(([value, label]) => (
-        <option key={value} value={value}>
-          {label}
-        </option>
-      ))}
-    </select>
+      options={OPTIONS}
+      onChange={setLang}
+      label="Language / Bahasa / 语言"
+    />
   )
 }

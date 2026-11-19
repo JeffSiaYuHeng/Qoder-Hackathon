@@ -9,7 +9,7 @@ const HINT_KEYS = [
   ['transaction_ref', 'hint.ref'],
 ]
 
-export default function ActionPlan({ incident, institutions, onToggle, onReset, reportsBusy }) {
+export default function ActionPlan({ incident, institutions, onToggle, onReset, onBack, reportsBusy }) {
   const { lang, t } = useI18n()
   const locale = localeFor(lang)
   const [lookup, setLookup] = useState({ busy: false, log: [], results: null, error: null })
@@ -103,6 +103,9 @@ export default function ActionPlan({ incident, institutions, onToggle, onReset, 
 
   return (
     <div>
+      <button type="button" className="link no-print" onClick={onBack}>
+        ← {t('editInstitutions')}
+      </button>
       <h1 className="no-print">{t('planTitle')}</h1>
       <p className="sub no-print">{t('planSub')}</p>
 

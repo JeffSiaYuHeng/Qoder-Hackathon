@@ -167,7 +167,7 @@ export default function App() {
 
         {stage === 'pick' && (
           <InstitutionPicker
-            initialSelected={detected}
+            initialSelected={selected.length ? selected.map((i) => i.slug) : detected}
             detected={detected}
             form={form}
             analyzeNote={analyzeNote}
@@ -182,6 +182,7 @@ export default function App() {
             institutions={selected}
             onToggle={toggleStep}
             onReset={reset}
+            onBack={() => setStage('pick')}
             reportsBusy={reportsBusy}
           />
         )}
