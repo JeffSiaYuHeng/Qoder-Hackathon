@@ -55,3 +55,13 @@ npm run build
 - Commit small and often on the hackathon branch. Never rewrite history mid-event.
 - If a change would take more than ~10 minutes, stop and ask whether it is demo-critical.
 - Leave a one-line `# HACK:` comment only when something is deliberately stubbed or hardcoded for the demo.
+
+## UI rules
+
+The look lives in the tokens at the top of `src/index.css`. Use `var(--…)` and don't hardcode colours or sizes.
+
+- One accent colour (`--accent`), only for things you tap. Calls (`tel:` links) are styled solid accent automatically.
+- Status never relies on colour alone. Done = tick + strike-through. Warning = amber box with "!".
+- Text sizes come only from `--fs-*`. Body text is 16px minimum, and inputs too, so iOS doesn't zoom.
+- Spacing comes from `--s-*`. Every tap target is at least 44px tall.
+- Keep using the existing class names (`card`, `step`, `panel`, `action-btn`, `primary`, `link`), and new screens match for free.
