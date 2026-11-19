@@ -8,7 +8,8 @@
 | | |
 | --- | --- |
 | App | ScamSOS — guest-only React + Vite SPA; Supabase is read-only (institutions registry) |
-| Latest commit | `ab094e0` — auth remnants removed (no login strings, no dead `.badge` CSS, README/design docs synced); builds on `ebc6149` welcome + Gemini AI reports + PDF |
+| Latest commit | `58a947c` (docs) on `ab094e0` — auth remnants removed (no login strings, no dead `.badge` CSS, README/design docs synced); builds on `ebc6149` welcome + Gemini AI reports + PDF |
+| Working tree | Clean; `main` in sync with origin and auto-deployed |
 | Golden path | Welcome → "Get help now" → tell story (voice or text) → AI autofill + detected institutions → confirm → action plan with AI report drafts → download PDF → email reports → print |
 | Build | `npm run build` passes |
 | Deploy | **Live: https://scamsos.vercel.app** (Vercel CLI, prod env vars set; welcome → intake → picker → plan verified on the deployed URL, including AI report bodies and the AI police statement via `/api/report`) |
@@ -29,7 +30,7 @@
 - **Privacy** — incidents live only in React state (`crypto.randomUUID()` id); nothing is written to Supabase. Incident tables are now unused.
 - **Outputs** — `tel:` / open / maps / email buttons, call script panel, printable police-ready report (prints `statement` when AI drafted it).
 - **PDF report** — `src/lib/pdf.js` (pdf-lib, A4, lazy-loaded chunk) builds one incident PDF (police report + checklist status + every institution draft); "Download PDF" button on the action plan, and the same PDF is attached to the Resend emails when "Send all reports" runs (`server/send.js` validates base64 + ≤ 4 MB).
-- **i18n** — EN/BM toggle in the topbar, persisted in `localStorage` (`scamsos.lang`); includes the `stepsDone` progress label.
+- **i18n** — EN/BM/中文 toggle in the topbar and welcome screen, persisted in `localStorage` (`scamsos.lang`); report/email keys fall back to English in zh.
 - **Theme** — light/dark via `ThemeToggle.jsx`: device preference by default, a manual pick sets `data-theme` on `<html>`. All colours are design tokens at the top of `src/index.css`.
 - **Flow chrome** — `Stepper.jsx` (Tell us → Confirm → Action plan) and `EmergencyBar.jsx` (Call 997 on every screen).
 - **Demo mode** — `?demo` (`src/demoMode.js` intercepts `tel:`/`mailto:` clicks with toasts; `src/lib/demo.js` serves canned analyze/lookup results and a one-click demo story). Both trigger on any `?demo` value.
@@ -39,7 +40,7 @@
 
 - Screenshot OCR, case tracking.
 - Voice input is implemented and the hold/release flow was verified in-browser with a fake mic stream (speech WAV → transcript appended to the form); a real microphone still needs one manual permission-prompt check.
-- The guest-only story-first golden path (analyze → picker → plan → AI reports → PDF) was verified in-browser on 2026-11-19; the deployed URL still needs a phone smoke test.
+- The guest-only story-first golden path (analyze → picker → plan → AI reports → PDF) is verified on https://scamsos.vercel.app; a real-phone smoke test (mic + dial/send) is still pending.
 
 ## Known gaps / decisions
 
@@ -66,9 +67,9 @@
 
 ## Next steps (suggested)
 
-1. Browser-test the new golden path end to end (incl. `?demo`), then deploy to Vercel with env vars and run it on a phone.
-2. Fix PRD §8 schema drift to match the live `institutions` table.
-3. Rehearse the 90-second demo and prepare offline fallbacks (`?demo`).
+1. Run the deployed app on a real phone: mic permission, `tel:` dial, mailto/send.
+2. Rehearse the 90-second demo and prepare offline fallbacks (`?demo`, screenshots).
+3. Fix PRD §8 schema drift to match the live `institutions` table.
 
 ## How to update
 
@@ -98,3 +99,4 @@ After any task that changes app behavior, schema, or scope:
 - **2026-11-19** — Merged the welcome-screen commit but dropped its UI-only login per owner request: `WelcomeScreen` keeps the 997 bar, one "Get help now" CTA and the flow steps; `AuthScreen`, the `login` entry state and the fake user are gone. LangSwitch + zh dictionary preserved. Verified welcome → intake → plan with AI reports in-browser; build passes. Uncommitted at the time of writing.
 - **2026-11-20** — Live golden path re-verified on https://scamsos.vercel.app with two institutions selected (Maybank, Shopee): `/api/report` → 200, AI bodies render in both report panels (suspect account + RM amount verbatim, disclaimer kept) and the AI statement replaces the raw story in the police report. (An earlier scripted test hit a 400 by continuing with zero institutions — the picker itself blocks that; no app bug.) Docs updated; committed.
 - **2026-11-20** — Auth cleanup: removed unused `login.note`/`login.back` strings from all three locales, the dead `.badge` CSS (and its `.topbar .badge` override), and "sign-in" wording in `EmergencyBar`/CSS comments; README and design docs synced to the no-account, in-memory flow. Build passes; committed (`ab094e0`).
+- **2026-11-20** — Snapshot refreshed to the shipped state: latest commit/working-tree rows, EN/BM/中文 i18n, deployed golden-path status, and next steps (phone smoke test, demo rehearsal). Docs only; committed.
