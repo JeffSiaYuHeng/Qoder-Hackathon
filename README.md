@@ -2,6 +2,8 @@
 
 **From panic to action.** A Malaysia-first scam response app: describe the incident once, get an ordered action plan, the right official contacts, written reports, and a printable police document.
 
+**Live demo: https://scamsos.vercel.app/**
+
 Built for a 2-hour hackathon. Demo over polish — see [AGENTS.md](AGENTS.md).
 
 ## The problem
