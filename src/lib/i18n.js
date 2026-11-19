@@ -160,8 +160,6 @@ export const dict = {
     'welcome.f2': 'Who to call, in the right order, with tap-to-call numbers',
     'welcome.f3': 'A police-ready report and emails to your bank and platforms',
     'welcome.trust': "Free · English, BM, 中文 · We don't store your story",
-    'login.note': 'Demo only: there are no real accounts yet. Any email works.',
-    'login.back': '← Back',
   },
   bm: {
     'pickTitle': 'Duit hilang? Bertindak sekarang.',
@@ -321,8 +319,6 @@ export const dict = {
     'welcome.f2': 'Siapa perlu dihubungi, mengikut urutan, dengan nombor sedia untuk dipanggil',
     'welcome.f3': 'Laporan sedia polis dan e-mel kepada bank serta platform anda',
     'welcome.trust': 'Percuma · English, BM, 中文 · Kami tidak menyimpan cerita anda',
-    'login.note': 'Demo sahaja: belum ada akaun sebenar. Sebarang e-mel boleh digunakan.',
-    'login.back': '← Kembali',
   },
   // Chinese (Simplified, as used in Malaysia). Report, email and call-script keys are left out on
   // purpose: they fall back to English, because banks, platforms and the police work in English/BM.
@@ -438,8 +434,6 @@ export const dict = {
     'welcome.f2': '按正确顺序联系谁，一按就能拨打',
     'welcome.f3': '交给警方的报告，以及发给银行和平台的电邮',
     'welcome.trust': '免费 · English、BM、中文 · 我们不会储存你的描述',
-    'login.note': '仅供演示：目前没有真实账户，任何电邮都可以。',
-    'login.back': '← 返回',
   },
 }
 

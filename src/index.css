@@ -218,18 +218,6 @@ main > :not(.topbar) {
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
-.badge {
-  font-size: var(--fs-sm);
-  padding: var(--s-1) var(--s-3);
-  border: 1px solid var(--line);
-  border-radius: var(--r-pill);
-  color: var(--ink-2);
-  background: var(--surface);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .lang-switch {
   width: auto;
   min-height: var(--tap);
@@ -1064,7 +1052,7 @@ details.panel[open] summary::before {
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
-/* Emergency hotline: reachable before sign-in and on the first screen */
+/* Emergency hotline: reachable on every screen */
 
 .sos {
   display: flex;
@@ -1377,10 +1365,6 @@ details.panel[open] summary::before {
 @media (max-width: 560px) {
   h1 {
     font-size: var(--fs-xl);
-  }
-
-  .topbar .badge {
-    display: none; /* the signed-in email isn't worth the room on a phone */
   }
 
   /* Institutions as a full-width list, like a banking app's bank picker. */

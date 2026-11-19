@@ -1,7 +1,7 @@
 import { useI18n } from './lib/i18n'
 
-// The one action that must never wait: calling NSRC 997. Shown before sign-in and on the
-// first screen, so a victim can call without entering any data (PRD F1).
+// The one action that must never wait: calling NSRC 997. Shown on every screen, so a
+// victim can call without entering any data (PRD F1).
 export default function EmergencyBar() {
   const { t } = useI18n()
   return (

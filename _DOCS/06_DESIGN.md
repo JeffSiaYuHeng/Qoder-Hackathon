@@ -96,10 +96,9 @@ All class names come from the existing JSX, so restyling never needs a component
 | `.panel` | Grouped section | White card on the page background |
 | `.report` | Police report preview | Looks like a sheet of paper on screen; the only thing that prints |
 | `.status.error` | Error line | Danger colour with a "!" prefix |
-| `.badge` | Signed-in email | Hidden on phones (≤ 560 px) to keep the header on one line |
 | `.topbar` | App bar | Sticky, translucent with blur, like a native app header |
-| `.stepper` | Flow progress ("Where it went → What happened → Action plan") | Under the app bar on every signed-in screen. Done = green ✓, current = accent ring. Steps come from the `FLOW` array in `src/Stepper.jsx` |
-| `.sos` | Call 997 bar (`EmergencyBar.jsx`) | On the sign-in screen and the first screen, so a victim can call NSRC without signing in or typing anything (PRD F1) |
+| `.stepper` | Flow progress ("Tell us → Confirm → Action plan") | Under the app bar on every app screen. Done = green ✓, current = accent ring. Steps come from the `FLOW` array in `src/Stepper.jsx` |
+| `.sos` | Call 997 bar (`EmergencyBar.jsx`) | On the welcome screen and every app screen, so a victim can call NSRC without entering anything (PRD F1) |
 | `.card-avatar` | Institution badge (MBB, CIMB, TNG…) | Round badge with the short name Malaysians use. On phones the tiles become a full-width list, like a banking app's bank picker |
 | `.progress` | "2 of 6 done" bar on the action plan | Green fill grows as steps are ticked |
 | `.demo-toast` | Stage-demo message | Only with `?demo=1` (see §11) |
@@ -113,7 +112,7 @@ One codebase adapts to the device; the CSS is mobile-first in spirit, with three
 | Width | Layout |
 |---|---|
 | Phone (≤ 560 px) | App-style. Sticky app bar on top; the screen's main button sits in a **sticky bottom action bar** under the thumb (picker "Continue", intake "Get my action plan"). Single column, full-width step buttons |
-| Tablet (561–1023 px) | Wider single column, more institution tiles per row, sign-in form shown as a card |
+| Tablet (561–1023 px) | Wider single column, more institution tiles per row |
 | Desktop (≥ 1024 px) | Content up to 1080 px. **Action plan in two columns**: checklist on the left; incident summary, call script, email and print on the right. Intake form capped at a readable 720 px |
 
 - Screens ease in (220 ms) when the flow moves on; off with reduced motion.
@@ -123,7 +122,7 @@ One codebase adapts to the device; the CSS is mobile-first in spirit, with three
 ## 8. Light and dark theme
 
 - **Default:** follows the device setting (`prefers-color-scheme`).
-- **Toggle:** `ThemeToggle` sits in the top bar and on the sign-in screen. It sets `data-theme="light|dark"` on `<html>` and remembers the choice in `localStorage` on that device.
+- **Toggle:** `ThemeToggle` sits in the top bar and on the welcome screen. It sets `data-theme="light|dark"` on `<html>` and remembers the choice in `localStorage` on that device.
 - **No flash:** an inline script in `index.html` applies the saved choice before the first paint.
 - **CSS:** dark values are declared twice: under `@media (prefers-color-scheme: dark)` for `:root:not([data-theme='light'])`, and under `:root[data-theme='dark']`. Edit both blocks together.
 - **Print:** always light.
@@ -138,7 +137,7 @@ One codebase adapts to the device; the CSS is mobile-first in spirit, with three
 ## 10. How it was checked
 
 - Contrast computed for every token pair in both themes (all ≥ 4.5:1).
-- Golden path (sign in → pick → intake → plan) clicked through in Chrome at 390 px (phone) and 1280 px (laptop), in light and dark. No console errors.
+- Golden path (welcome → intake → pick → plan) clicked through in Chrome at 390 px (phone) and 1280 px (laptop), in light and dark. No console errors.
 - Tap-target audit on all four screens: nothing under 44 px.
 - Print emulation: only the police report prints.
 - Theme toggle: device dark → toggle to light → survives reload → toggles back.
@@ -157,7 +156,7 @@ Supabase was mocked at the network layer for these runs, so they cover the UI, n
 
 | # | Issue | Why it matters | Suggested fix |
 |---|---|---|---|
-| 1 | The sign-in screen sits in front of a panic flow | Breaks PRD F1 ("call 997 with a single tap, without entering any data"); costs the victim time | **Partly done:** a Call 997 bar now sits on the sign-in screen. Bank fraud lines still need sign-in; dropping sign-in for the victim flow would finish it |
+| 1 | ~~The sign-in screen sits in front of a panic flow~~ | Breaks PRD F1 ("call 997 with a single tap, without entering any data"); costs the victim time | **Done:** sign-in was removed; the welcome screen has one "Get help now" CTA and the 997 bar sits above it |
 | 2 | ~~Plan screen says "the first hour is when money is still recoverable"~~ | Not supported by an official source (see §9) | **Done:** now "Reporting within 24 hours gives the best chance to freeze the money." |
 | 3 | ~~`tel:` / `mailto:` leave the browser in the stage demo~~ | System dialogs on stage | **Done:** `?demo=1` (§11) |
 | 4 | Raw Supabase error messages are shown to users | Jargon at the worst moment | Map errors to plain sentences; keep the raw message in the console |

@@ -15,9 +15,9 @@ _To be written._
 
 _To be written._ Screens map to the flow in [00_STRUCTURE.md](00_STRUCTURE.md):
 
-1. Sign in (`AuthScreen`)
-2. Institution picker (`InstitutionPicker`)
-3. Intake (`IntakeForm`)
+1. Welcome (`WelcomeScreen`) — no accounts
+2. Intake (`IntakeForm`)
+3. Institution picker (`InstitutionPicker`)
 4. Action plan (`ActionPlan`)
 5. Printable report (inside `ActionPlan`)
 
