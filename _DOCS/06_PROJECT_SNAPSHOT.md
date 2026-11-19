@@ -1,6 +1,6 @@
 # 06 — Project Snapshot
 
-> **Living status file.** Last updated: 2026-11-20.
+> **Living status file.** Last updated: 2026-11-20 (live verification).
 > Keep this current — see [How to update](#how-to-update) and the rule in [AGENTS.md](../AGENTS.md).
 
 ## Status at a glance
@@ -8,10 +8,10 @@
 | | |
 | --- | --- |
 | App | ScamSOS — guest-only React + Vite SPA; Supabase is read-only (institutions registry) |
-| Latest commit | Story-first privacy fix (`8515b37`); auth removal, AI reports, PDF download/attachment uncommitted |
+| Latest commit | `ebc6149` — welcome screen (no login, no accounts) merged onto guest-only flow + Gemini AI reports + PDF download/attachment |
 | Golden path | Welcome → "Get help now" → tell story (voice or text) → AI autofill + detected institutions → confirm → action plan with AI report drafts → download PDF → email reports → print |
 | Build | `npm run build` passes |
-| Deploy | **Live: https://scamsos.vercel.app** (Vercel CLI, prod env vars set; analyze/lookup/send smoke-tested on the deployed URL) |
+| Deploy | **Live: https://scamsos.vercel.app** (Vercel CLI, prod env vars set; welcome → intake → picker → plan verified on the deployed URL, including AI report bodies and the AI police statement via `/api/report`) |
 | Demo blockers recorded | None in-repo. All AI paths use Gemini (`AI_STUDIO_API`); the Qoder SDK experiment stays in gitignored `Qoder SDK/` |
 
 ## What works today
@@ -96,3 +96,4 @@ After any task that changes app behavior, schema, or scope:
 - **2026-11-20** — Workflow D: incident PDF via pdf-lib (`src/lib/pdf.js`, lazy `import()` → separate `pdf-*.js` chunk), "Download PDF" button + PDF build inside `sendAll` (`src/ActionPlan.jsx`), `pdf_base64`/`pdf_filename` forwarded `src/lib/agent.js` → `api/send.js` → `server/send.js` (validated, `attachments` per Resend payload; DEMO_MODE still routes to `DEMO_INBOX`). `reportsBusy` prop stub added; `downloadPdf`/`pdfBuilding` keys are provisional (another agent is adding theirs — merge on conflict). Build passes; download + send payload checked in-browser, `server/send.js` checked in Node. Uncommitted at the time of writing.
 - **2026-11-19** — Removed sign-in: deleted `AuthScreen.jsx`, auth/session/guest state and topbar account controls; app opens straight into intake. Reports now drafted by Gemini through `/api/report` (`server/report.js`, `src/lib/report.js`, strict validation, 20 s deadline → templates) instead of the local-only Qoder SDK; `src/App.jsx` merges the AI bodies + statement in the background. Verified locally and on https://scamsos.vercel.app (`/api/report` → `source:"ai"`); build passes. Docs updated; uncommitted at the time of writing.
 - **2026-11-19** — Merged the welcome-screen commit but dropped its UI-only login per owner request: `WelcomeScreen` keeps the 997 bar, one "Get help now" CTA and the flow steps; `AuthScreen`, the `login` entry state and the fake user are gone. LangSwitch + zh dictionary preserved. Verified welcome → intake → plan with AI reports in-browser; build passes. Uncommitted at the time of writing.
+- **2026-11-20** — Live golden path re-verified on https://scamsos.vercel.app with two institutions selected (Maybank, Shopee): `/api/report` → 200, AI bodies render in both report panels (suspect account + RM amount verbatim, disclaimer kept) and the AI statement replaces the raw story in the police report. (An earlier scripted test hit a 400 by continuing with zero institutions — the picker itself blocks that; no app bug.) Docs updated; committed.
