@@ -59,7 +59,8 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 ├── .env.local                # real Supabase + AI Studio keys, gitignored
 └── src/
     ├── main.jsx              # React entry: LangContext provider, imports demoMode.js
-    ├── App.jsx               # stage state machine + local incident state
+    ├── App.jsx               # entry (welcome | app) + stage state machine + local incident state
+    ├── WelcomeScreen.jsx     # first screen: 997 bar, one "Get help now" CTA, flow steps
     ├── InstitutionPicker.jsx # reads the institutions registry
     ├── IntakeForm.jsx        # incident intake form, opens the voice dialog
     ├── VoiceDialog.jsx       # hold-to-talk mic dialog, appends transcript to the form
@@ -84,10 +85,12 @@ Map of the repo and how the pieces connect. Product background is in [04_PRD.md]
 
 ## App flow
 
-`App.jsx` is the whole state machine. It holds `stage`, `selected`, `detected`, `form`, and the in-memory `incident`. There is no sign-in.
+`App.jsx` is the whole state machine. `entry` is `welcome` or `app`; inside the app it holds `stage`, `selected`, `detected`, `form`, and the in-memory `incident`. There is no sign-in.
 
 ```
-IntakeForm ──stage "intake"
+WelcomeScreen ──"Get help now"──► entry "app"
+                                         │
+IntakeForm ──stage "intake"              │
      │ story → /api/analyze (fields + detected institutions)
      ▼
 InstitutionPicker ──stage "pick"

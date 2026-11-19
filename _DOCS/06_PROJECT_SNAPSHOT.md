@@ -9,14 +9,15 @@
 | --- | --- |
 | App | ScamSOS — guest-only React + Vite SPA; Supabase is read-only (institutions registry) |
 | Latest commit | Story-first privacy fix (`8515b37`); auth removal, AI reports, PDF download/attachment uncommitted |
-| Golden path | Tell story (voice or text) → AI autofill + detected institutions → confirm → action plan with AI report drafts → download PDF → email reports → print |
+| Golden path | Welcome → "Get help now" → tell story (voice or text) → AI autofill + detected institutions → confirm → action plan with AI report drafts → download PDF → email reports → print |
 | Build | `npm run build` passes |
 | Deploy | **Live: https://scamsos.vercel.app** (Vercel CLI, prod env vars set; analyze/lookup/send smoke-tested on the deployed URL) |
 | Demo blockers recorded | None in-repo. All AI paths use Gemini (`AI_STUDIO_API`); the Qoder SDK experiment stays in gitignored `Qoder SDK/` |
 
 ## What works today
 
-- **No auth** — `AuthScreen` and the Supabase auth state machine are gone. The app opens directly into intake; `sessionStorage` guest flags are gone too, and `src/lib/supabase.js` is used only to read the institutions registry.
+- **No auth** — no sign-in, no demo login, no Supabase session. `AuthScreen` is deleted; `src/lib/supabase.js` is used only to read the institutions registry.
+- **Welcome screen** — `WelcomeScreen.jsx` opens the app: 997 bar, headline, one "Get help now" CTA, the three-step flow and a trust line. Entry choice persists in `sessionStorage` (`scamsos.entry`); there is no login button.
 - **Story-first flow** — intake → confirm institutions → action plan (`Stepper.jsx` FLOW). `/api/analyze` (Gemini `gemini-3.8-flash`, structured JSON) autofills amount/time/method/suspect details and detects institutions (badged in the picker); user confirms/edits before the plan is built.
 - **Institution picker** — reads the `institutions` registry from Supabase; multi-select by slug across banks, e-wallets and platforms; shows AI-extracted summary + detected chips.
 - **Intake** — story, amount, time, contact method, suspect phone/account, transaction reference.
@@ -94,3 +95,4 @@ After any task that changes app behavior, schema, or scope:
 - **2026-11-19** — Deployed to Vercel production via CLI: **https://scamsos.vercel.app** (project `scamsos`, GitHub repo connected, six prod env vars set). Deployed from the working tree, so it includes teammates' in-flight report/PDF pipeline (uncommitted). Smoke-tested deployed `/api/analyze` (correct extraction + detection), `/api/lookup` (registry fallback exercised) and `/api/send` (delivered to DEMO_INBOX, never the bank). Local git is ahead 1 / behind 3 of origin — merge+push of teammate work still pending.
 - **2026-11-20** — Workflow D: incident PDF via pdf-lib (`src/lib/pdf.js`, lazy `import()` → separate `pdf-*.js` chunk), "Download PDF" button + PDF build inside `sendAll` (`src/ActionPlan.jsx`), `pdf_base64`/`pdf_filename` forwarded `src/lib/agent.js` → `api/send.js` → `server/send.js` (validated, `attachments` per Resend payload; DEMO_MODE still routes to `DEMO_INBOX`). `reportsBusy` prop stub added; `downloadPdf`/`pdfBuilding` keys are provisional (another agent is adding theirs — merge on conflict). Build passes; download + send payload checked in-browser, `server/send.js` checked in Node. Uncommitted at the time of writing.
 - **2026-11-19** — Removed sign-in: deleted `AuthScreen.jsx`, auth/session/guest state and topbar account controls; app opens straight into intake. Reports now drafted by Gemini through `/api/report` (`server/report.js`, `src/lib/report.js`, strict validation, 20 s deadline → templates) instead of the local-only Qoder SDK; `src/App.jsx` merges the AI bodies + statement in the background. Verified locally and on https://scamsos.vercel.app (`/api/report` → `source:"ai"`); build passes. Docs updated; uncommitted at the time of writing.
+- **2026-11-19** — Merged the welcome-screen commit but dropped its UI-only login per owner request: `WelcomeScreen` keeps the 997 bar, one "Get help now" CTA and the flow steps; `AuthScreen`, the `login` entry state and the fake user are gone. LangSwitch + zh dictionary preserved. Verified welcome → intake → plan with AI reports in-browser; build passes. Uncommitted at the time of writing.

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { LangContext, makeT, localeFor } from './lib/i18n'
+import WelcomeScreen from './WelcomeScreen'
 import InstitutionPicker from './InstitutionPicker'
 import IntakeForm from './IntakeForm'
 import ActionPlan from './ActionPlan'
@@ -20,6 +21,8 @@ export default function App() {
   const [incident, setIncident] = useState(null)
   const [saving, setSaving] = useState(false)
   const [analyzeNote, setAnalyzeNote] = useState(null)
+  // Hackathon entry: welcome page, then straight into the app. No accounts.
+  const [entry, setEntry] = useState(() => sessionStorage.getItem('scamsos.entry') || 'welcome')
   const [lang, setLang] = useState(() => localStorage.getItem('scamsos.lang') || 'en')
   const [reportsBusy, setReportsBusy] = useState(false)
   // Bumped on every draft request/reset so a late AI reply can't overwrite a newer incident.
@@ -31,6 +34,14 @@ export default function App() {
     localStorage.setItem('scamsos.lang', lang)
     document.documentElement.lang = { en: 'en', bm: 'ms', zh: 'zh-Hans' }[lang] || 'en'
   }, [lang])
+
+  useEffect(() => {
+    sessionStorage.setItem('scamsos.entry', entry)
+  }, [entry])
+
+  function enterApp() {
+    setEntry('app')
+  }
 
   async function submitIntake(input) {
     setSaving(true)
@@ -135,14 +146,17 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, setLang, t }}>
-      <main>
-        <header className="topbar no-print">
-          <span className="logo">ScamSOS</span>
-          <span className="topbar-right">
-            <ThemeToggle />
-            <LangSwitch />
-          </span>
-        </header>
+      {entry === 'welcome' && <WelcomeScreen onStart={enterApp} />}
+
+      {entry === 'app' && (
+        <main>
+          <header className="topbar no-print">
+            <span className="logo">ScamSOS</span>
+            <span className="topbar-right">
+              <ThemeToggle />
+              <LangSwitch />
+            </span>
+          </header>
 
         <Stepper stage={stage} />
         <EmergencyBar />
@@ -171,7 +185,8 @@ export default function App() {
             reportsBusy={reportsBusy}
           />
         )}
-      </main>
+        </main>
+      )}
     </LangContext.Provider>
   )
 }

@@ -41,7 +41,8 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 ├── index.html
 ├── src/
 │   ├── main.jsx          # React entry + LangContext provider
-│   ├── App.jsx           # stage state machine + in-memory incident
+│   ├── App.jsx           # welcome/app entry + stage state machine + in-memory incident
+│   ├── WelcomeScreen.jsx # first screen: 997 bar, "Get help now", flow steps
 │   ├── InstitutionPicker.jsx
 │   ├── IntakeForm.jsx
 │   ├── VoiceDialog.jsx   # hold-to-talk mic dialog (pulse + bars animation)
@@ -100,9 +101,9 @@ vercel deploy        # preview deploy
 
 ## User flow
 
-1. **Tell the story** — the app opens straight into intake. No account, no sign-in. The story goes to `/api/analyze`, which prefills the form and flags detected institutions.
-2. **Confirm institutions** — banks / e-wallets / platforms (multi-select, loaded from `institutions`, detected ones pre-selected).
-3. **Intake details** — amount, time, contact method, suspect details; the voice button transcribes through `/api/stt`.
+1. **Welcome, then help** — a welcome screen with the 997 bar and one "Get help now" button. No account, no sign-in, no login screen. Entry choice lives in `sessionStorage` (`scamsos.entry`).
+2. **Tell the story** — story, amount, time, contact method and suspect details; the story goes to `/api/analyze`, which prefills the form and flags detected institutions. The voice button transcribes through `/api/stt`.
+3. **Confirm institutions** — banks / e-wallets / platforms (multi-select, loaded from `institutions`, detected ones pre-selected).
 4. **Action plan** — `src/lib/plan.js` builds steps, a call script and template reports in memory; `/api/report` rewrites the report wording with Gemini. The screen renders `tel:` / web / map buttons, lookup, per-institution reports, PDF download and a printable police report.
 5. Step checkboxes and the incident itself live in React state only — a reload clears them.
 
@@ -124,7 +125,7 @@ vercel deploy        # preview deploy
 
 ## Auth
 
-None. The app is guest-only: no sign-in screen, no Supabase session, no profile, no `user_id`. `src/lib/supabase.js` is used only to read the public `institutions` registry. Incidents live in React state and are never written to the database.
+None. There is no sign-in screen, no demo login, no Supabase session, no profile, no `user_id`. `src/lib/supabase.js` is used only to read the public `institutions` registry. Incidents live in React state and are never written to the database.
 
 ## Report drafting (Gemini)
 
