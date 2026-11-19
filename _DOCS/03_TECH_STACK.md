@@ -1,6 +1,6 @@
 # Tech Stack
 
-Hackathon demo stack. One app, one process, boring tech — see [AGENTS.md](AGENTS.md).
+Hackathon demo stack. One app, one process, boring tech — see [AGENTS.md](../AGENTS.md).
 
 ## Core
 
@@ -30,7 +30,7 @@ Supabase project: **scamsos**, ref `cxmzutazrqrykpnjgqnd`, region `ap-southeast-
 │   └── lib/supabase.js   # single client export
 ├── .env.local            # real keys, never committed
 ├── .env.example
-└── TECH_STACK.md
+└── _DOCS/                # docs — see 00_STRUCTURE.md
 ```
 
 ## Environment variables
@@ -53,6 +53,20 @@ npm run build        # production build
 vercel deploy        # preview deploy
 ```
 
+## User flow
+
+1. **Sign in** — Supabase Auth (email/password). "Use demo account" signs in with one click.
+2. **Pick institutions** — banks / e-wallets / platforms (multi-select, loaded from `institutions`).
+3. **Intake** — free-text story + amount, time, contact method, suspect details.
+4. **Action plan** — rule-based builder (`src/lib/plan.js`) writes `incidents`, `incident_institutions` and `action_steps`; the screen renders `tel:` / web / map buttons, a call script, email drafts and a printable police report.
+5. Step checkboxes persist `action_steps.done`.
+
+## Auth
+
+- Supabase Auth email/password; `incidents.user_id` references `auth.users`.
+- Demo credential (created via admin API, email confirmed): **demo@scamsos.my / ScamSOS2026!**
+- HACK: the demo credential is hardcoded in `src/AuthScreen.jsx` so the on-stage login is one click.
+
 ## Data model
 
 | Table | Purpose |
@@ -63,7 +77,7 @@ vercel deploy        # preview deploy
 | `action_steps` | Ordered checklist per incident (`call` / `open` / `map` / `email` / `print`) |
 | `reports` | Police/bank/platform report drafts generated from an incident |
 
-- Schema source of truth: [db/schema.sql](db/schema.sql); seed: [db/seed.sql](db/seed.sql).
+- Schema source of truth: [db/schema.sql](../db/schema.sql); seed: [db/seed.sql](../db/seed.sql).
 - Contacts in the seed were verified against official pages (Nov 2026).
 - RLS is intentionally off for the demo. Tables are created through SQL, so the anon key can read/write freely — acceptable for a 2-hour demo, never for production.
 - No ORM and no migration tooling; edit the SQL files and re-run them in the Supabase SQL editor.

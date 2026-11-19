@@ -1,86 +1,148 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
-
-const GROUPS = [
-  ['bank', 'Banks'],
-  ['ewallet', 'E-wallets'],
-  ['platform', 'Platforms'],
-]
+import AuthScreen from './AuthScreen'
+import InstitutionPicker from './InstitutionPicker'
+import IntakeForm from './IntakeForm'
+import ActionPlan from './ActionPlan'
+import { buildActionPlan } from './lib/plan'
 
 export default function App() {
-  const [institutions, setInstitutions] = useState([])
+  const [session, setSession] = useState(null)
+  const [authReady, setAuthReady] = useState(false)
+  const [stage, setStage] = useState('pick')
   const [selected, setSelected] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [incident, setIncident] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    supabase
-      .from('institutions')
-      .select('*')
-      .order('name')
-      .then(({ data, error }) => {
-        if (error) setError(error.message)
-        else setInstitutions(data)
-        setLoading(false)
-      })
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setAuthReady(true)
+    })
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    return () => sub.subscription.unsubscribe()
   }, [])
 
-  function toggle(id) {
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
+  async function submitIntake(form) {
+    setSaving(true)
+    setError(null)
+    const plan = buildActionPlan(form, selected)
+
+    const { data: created, error: insertError } = await supabase
+      .from('incidents')
+      .insert({
+        user_id: session.user.id,
+        victim_summary: form.victim_summary,
+        amount: form.amount ? Number(form.amount) : null,
+        occurred_at: form.occurred_at || null,
+        contact_method: form.contact_method || null,
+        scammer_phone: form.scammer_phone || null,
+        scammer_account: form.scammer_account || null,
+        transaction_ref: form.transaction_ref || null,
+        status: 'action',
+        llm_summary: plan.summary,
+        call_script: plan.call_script,
+      })
+      .select()
+      .single()
+
+    if (insertError) {
+      setError(insertError.message)
+      setSaving(false)
+      return
+    }
+
+    const [links, stepsResult] = await Promise.all([
+      supabase
+        .from('incident_institutions')
+        .insert(selected.map((i) => ({ incident_id: created.id, institution_id: i.id }))),
+      supabase
+        .from('action_steps')
+        .insert(
+          plan.steps.map((s, idx) => ({
+            incident_id: created.id,
+            step_order: idx + 1,
+            title: s.title,
+            action: s.action,
+            value: s.value,
+            urgency: s.urgency,
+          })),
+        )
+        .select(),
+    ])
+
+    if (links.error || stepsResult.error) {
+      setError((links.error || stepsResult.error).message)
+      setSaving(false)
+      return
+    }
+
+    setIncident({
+      ...created,
+      steps: stepsResult.data.sort((a, b) => a.step_order - b.step_order),
+    })
+    setSaving(false)
+    setStage('plan')
   }
 
-  const selectedNames = institutions
-    .filter((i) => selected.includes(i.id))
-    .map((i) => i.name)
+  async function toggleStep(step) {
+    const done = !step.done
+    setIncident((inc) => ({
+      ...inc,
+      steps: inc.steps.map((s) => (s.id === step.id ? { ...s, done } : s)),
+    }))
+    await supabase.from('action_steps').update({ done }).eq('id', step.id)
+  }
+
+  function reset() {
+    setIncident(null)
+    setSelected([])
+    setStage('pick')
+    setError(null)
+  }
+
+  if (!authReady) return <main><p className="status">Loading…</p></main>
+  if (!session) return <AuthScreen />
 
   return (
     <main>
       <header className="topbar">
         <span className="logo">ScamSOS</span>
-        <span className="badge">Malaysia · NSRC 997</span>
+        <span className="topbar-right">
+          <span className="badge">{session.user.email}</span>
+          <button className="link" onClick={() => supabase.auth.signOut()}>
+            Sign out
+          </button>
+        </span>
       </header>
 
-      <h1>Money gone? Act now.</h1>
-      <p className="sub">
-        Pick where the money went — you can pick more than one. We will build your
-        call list, checklist and police-ready report from here.
-      </p>
+      {stage === 'pick' && (
+        <InstitutionPicker
+          onContinue={(items) => {
+            setSelected(items)
+            setStage('intake')
+          }}
+        />
+      )}
 
-      {loading && <p className="status">Loading institution registry…</p>}
-      {error && <p className="status error">Could not load registry: {error}</p>}
+      {stage === 'intake' && (
+        <IntakeForm
+          institutions={selected}
+          saving={saving}
+          error={error}
+          onBack={() => setStage('pick')}
+          onSubmit={submitIntake}
+        />
+      )}
 
-      {GROUPS.map(([type, label]) => {
-        const items = institutions.filter((i) => i.type === type)
-        if (!items.length) return null
-        return (
-          <section key={type}>
-            <h2>{label}</h2>
-            <div className="grid">
-              {items.map((i) => (
-                <button
-                  key={i.id}
-                  className={selected.includes(i.id) ? 'card selected' : 'card'}
-                  onClick={() => toggle(i.id)}
-                  aria-pressed={selected.includes(i.id)}
-                >
-                  <span className="card-name">{i.name}</span>
-                  {i.hotline && <span className="card-meta">{i.hotline}</span>}
-                </button>
-              ))}
-            </div>
-          </section>
-        )
-      })}
-
-      <footer>
-        <strong>Selected:</strong>{' '}
-        {selectedNames.length ? selectedNames.join(', ') : 'none yet'}
-      </footer>
-
-      {!loading && !error && (
-        <p className="status">
-          Registry loaded from Supabase · {institutions.length} institutions
-        </p>
+      {stage === 'plan' && incident && (
+        <ActionPlan
+          incident={incident}
+          institutions={selected}
+          onToggle={toggleStep}
+          onReset={reset}
+        />
       )}
     </main>
   )

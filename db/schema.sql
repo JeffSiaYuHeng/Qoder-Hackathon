@@ -16,6 +16,7 @@ create table if not exists institutions (
 
 create table if not exists incidents (
   id                uuid primary key default gen_random_uuid(),
+  user_id           uuid references auth.users (id) on delete cascade,
   created_at        timestamptz not null default now(),
   status            text not null default 'intake' check (status in ('intake', 'action', 'reported', 'closed')),
   victim_summary    text,
