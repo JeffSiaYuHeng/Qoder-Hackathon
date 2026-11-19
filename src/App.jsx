@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from './lib/supabase'
 import { LangContext, makeT, localeFor } from './lib/i18n'
 import AuthScreen from './AuthScreen'
+import WelcomeScreen from './WelcomeScreen'
 import InstitutionPicker from './InstitutionPicker'
 import IntakeForm from './IntakeForm'
 import ActionPlan from './ActionPlan'
@@ -14,8 +14,6 @@ import { analyzeStory } from './lib/agent'
 
 // Privacy (PRD §9): incident data lives in React state only — nothing is written to Supabase.
 export default function App() {
-  const [session, setSession] = useState(null)
-  const [authReady, setAuthReady] = useState(false)
   const [stage, setStage] = useState('intake')
   const [selected, setSelected] = useState([])
   const [detected, setDetected] = useState([])
@@ -23,7 +21,15 @@ export default function App() {
   const [incident, setIncident] = useState(null)
   const [saving, setSaving] = useState(false)
   const [analyzeNote, setAnalyzeNote] = useState(null)
-  const [guest, setGuest] = useState(() => sessionStorage.getItem('scamsos.guest') !== '0')
+  // No real authentication (hackathon scope): welcome -> optional demo login -> app.
+  const [entry, setEntry] = useState(() => sessionStorage.getItem('scamsos.entry') || 'welcome')
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('scamsos.user'))
+    } catch {
+      return null
+    }
+  })
   const [lang, setLang] = useState(() => localStorage.getItem('scamsos.lang') || 'en')
 
   const t = useMemo(() => makeT(lang), [lang])
@@ -34,28 +40,28 @@ export default function App() {
   }, [lang])
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      setAuthReady(true)
-    })
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s)
-      if (s) {
-        sessionStorage.removeItem('scamsos.guest')
-        setGuest(false)
-      }
-    })
-    return () => sub.subscription.unsubscribe()
-  }, [])
+    sessionStorage.setItem('scamsos.entry', entry)
+  }, [entry])
 
-  function startGuest() {
-    sessionStorage.setItem('scamsos.guest', '1')
-    setGuest(true)
+  useEffect(() => {
+    if (user) sessionStorage.setItem('scamsos.user', JSON.stringify(user))
+    else sessionStorage.removeItem('scamsos.user')
+  }, [user])
+
+  function enterApp(nextUser) {
+    if (nextUser !== undefined) setUser(nextUser)
+    setEntry('app')
   }
 
-  function exitGuest() {
-    sessionStorage.setItem('scamsos.guest', '0')
-    setGuest(false)
+  function logOut() {
+    setUser(null)
+    setDetected([])
+    setForm(null)
+    setIncident(null)
+    setSelected([])
+    setAnalyzeNote(null)
+    setStage('intake')
+    setEntry('welcome')
   }
 
   async function submitIntake(input) {
@@ -115,28 +121,26 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, setLang, t }}>
-      {!authReady && (
-        <main>
-          <p className="status">Loading…</p>
-        </main>
+      {entry === 'welcome' && <WelcomeScreen onStart={() => enterApp(null)} onLogin={() => setEntry('login')} />}
+
+      {entry === 'login' && (
+        <AuthScreen onLogin={(u) => enterApp(u)} onGuest={() => enterApp()} onBack={() => setEntry('welcome')} />
       )}
 
-      {authReady && !session && !guest && <AuthScreen onGuest={startGuest} />}
-
-      {authReady && (session || guest) && (
+      {entry === 'app' && (
         <main>
           <header className="topbar no-print">
             <span className="logo">ScamSOS</span>
             <span className="topbar-right">
               <ThemeToggle />
               <LangSwitch />
-              <span className="badge">{session ? session.user.email : t('guestBadge')}</span>
-              {session ? (
-                <button className="link" onClick={() => supabase.auth.signOut()}>
+              <span className="badge">{user ? user.email : t('guestBadge')}</span>
+              {user ? (
+                <button className="link" onClick={logOut}>
                   {t('signOut')}
                 </button>
               ) : (
-                <button className="link" onClick={exitGuest}>
+                <button className="link" onClick={() => setEntry('login')}>
                   {t('signIn')}
                 </button>
               )}

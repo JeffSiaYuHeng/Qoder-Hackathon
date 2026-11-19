@@ -1,27 +1,21 @@
 import { useState } from 'react'
-import { supabase } from './lib/supabase'
 import { useI18n } from './lib/i18n'
 import ThemeToggle from './ThemeToggle'
 import LangSwitch from './LangSwitch'
 import EmergencyBar from './EmergencyBar'
 
-// HACK: demo account hardcoded for the on-stage flow
-const DEMO = { email: 'demo@scamsos.my', password: 'ScamSOS2026!' }
+// HACK: no real authentication in the hackathon build. "Signing in" only labels this browser
+// session with an email; nothing is checked and nothing is stored on a server.
+const DEMO_USER = { email: 'demo@scamsos.my' }
 
-export default function AuthScreen({ onGuest }) {
-  const { lang, setLang, t } = useI18n()
+export default function AuthScreen({ onLogin, onGuest, onBack }) {
+  const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
-  const [busy, setBusy] = useState(false)
 
-  async function signIn(creds, event) {
-    event?.preventDefault()
-    setBusy(true)
-    setError(null)
-    const { error } = await supabase.auth.signInWithPassword(creds || { email, password })
-    if (error) setError(error.message)
-    setBusy(false)
+  function submit(event) {
+    event.preventDefault()
+    onLogin({ email: email.trim() })
   }
 
   return (
@@ -35,10 +29,14 @@ export default function AuthScreen({ onGuest }) {
           </span>
         </div>
         <EmergencyBar />
+
+        <button type="button" className="link auth-back" onClick={onBack}>
+          {t('login.back')}
+        </button>
         <h1>{t('signInTitle')}</h1>
         <p className="sub">{t('signInSub')}</p>
 
-        <form onSubmit={(e) => signIn(null, e)}>
+        <form onSubmit={submit}>
           <label>
             {t('email')}
             <input
@@ -59,18 +57,16 @@ export default function AuthScreen({ onGuest }) {
               required
             />
           </label>
-          <button className="primary" disabled={busy}>
-            {busy ? t('signingIn') : t('signIn')}
-          </button>
+          <button className="primary">{t('signIn')}</button>
         </form>
 
-        <button className="link" onClick={() => signIn(DEMO)} disabled={busy}>
+        <button type="button" className="action-btn demo-login" onClick={() => onLogin(DEMO_USER)}>
           {t('useDemo')}
         </button>
-        {error && <p className="status error">{error}</p>}
+        <p className="status">{t('login.note')}</p>
 
         <div className="guest">
-          <button className="action-btn guest-btn" onClick={onGuest} disabled={busy}>
+          <button type="button" className="link" onClick={onGuest}>
             {t('continueAsGuest')}
           </button>
           <p className="status">{t('guestNote')}</p>

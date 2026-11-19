@@ -510,6 +510,93 @@ footer strong {
   margin: var(--s-2) auto 0;
 }
 
+/* Welcome (first screen) */
+
+.welcome {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.welcome-hero h1 {
+  margin-top: var(--s-2);
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.welcome-actions .primary,
+.welcome-actions .action-btn {
+  width: 100%;
+}
+
+.welcome-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+
+.welcome-steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  font-weight: 600;
+}
+
+.welcome-num {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.welcome-trust {
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+}
+
+@media (min-width: 768px) {
+  .welcome-actions {
+    flex-direction: row;
+  }
+
+  .welcome-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .welcome-steps li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.auth-back {
+  align-self: flex-start;
+  padding-left: 0;
+}
+
+.demo-login {
+  width: 100%;
+  margin-top: var(--s-3);
+}
+
 .auth-top {
   display: flex;
   align-items: center;
